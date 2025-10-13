@@ -1,0 +1,14 @@
+spring:
+  application:
+      name: cruddemo
+  datasource:
+      url: jdbc:mysql://localhost:3306/blog_directory
+      username: springstudent
+      password: springstudent
+#  security:
+#      user:
+#        name: user
+#        password: user
+
+#springdoc.swagger-ui.path=/my-ui.html
+#springdoc.api-docs.path=/api-ui

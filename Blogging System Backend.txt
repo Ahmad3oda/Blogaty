@@ -1,0 +1,61 @@
+Blogging System Backend
+
+Features:
+- Post blogs 
+- Save a blog
+- Comment on a blog
+- Upvote or Downvote a blog
+- Upvote or Downvote a comment
+- Follow a user
+- Search for a user/blog
+
+Following Controller -> Repository -> JPA -> Data Source Archticture
+Services:
+---------
+Blog: "/blog"
+- get/{user_id}
+- post/{user_id} @body{content}
+- put/{blog_id} @body{content}
+- patch/{blog_id} @body{content}
+- delete/{blog_id}
+
+Bookmark "/bookmark"
+- get/{user_id}
+- post/{user_id}/{blog_id}
+- delete/{user_id}/{blog_id}
+
+Comment: "/comment"
+- get/{blog_id}
+- post/{user_id}/{blog_id} @body{content}
+- patch/{comment_id} @body{content}
+- delete/{comment_id}
+
+Blog Votes: "/blog_vote"
+- get/users/{blog_id}
+- post/{user_id}/{blog_id}
+- patch/{user_id}/{blog_id}
+- delete/{user_id}/{blog_id}
+
+Comment Votes: "/comment_vote"
+- post/{user_id}/{comment_id}
+- patch/{user_id}/{comment_id}
+- delete/{user_id}/{comment_id}
+
+Follower: "/follow"
+- get/followers/{user_id}
+- get/following/{user_id}
+- post/{user_id}/{follower_id}
+- delete/{user_id}/{follower_id}
+
+Search: "/search"
+- get/username/{content}
+- get/blog/{content}
+
+Tables:
+User: id - username - password
+Blog: blog_id - user_id - content - date - votes - comments
+Comment: comment_id blog_id - user_id - content - date - votes
+Blog Vote: blog_id - user_id - type
+Comment Vote: comment_id - user_id - type
+Bookmark: user_id - blog_id
+Follower: user_id - follower_id
