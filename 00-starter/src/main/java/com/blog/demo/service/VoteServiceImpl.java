@@ -12,6 +12,7 @@ import com.blog.demo.repository.BlogVoteRepository;
 import com.blog.demo.repository.CommentRepository;
 import com.blog.demo.repository.CommentVoteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,15 +75,8 @@ public class VoteServiceImpl implements VoteService {
         blogVoteRepository.save(blogVote);
     }
 
-    protected void updateVoteCount (CommentVote commentVote) {
-        Comment comment = commentRepository.findById(commentVote.getId().getCommentId());
-        if(commentVote.getType() == Vote.up)
-            comment.setVotes(comment.getVotes() + 1);
-        else
-            comment.setVotes(comment.getVotes() - 1);
-    }
-
     @Override
+    @Transactional
     public BlogVoteResponse addBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest) {
         BlogVoteID blogVoteID = new BlogVoteID();
         blogVoteID.setUserId(userId);
@@ -103,6 +97,7 @@ public class VoteServiceImpl implements VoteService {
     }
 
     @Override
+    @Transactional
     public BlogVoteResponse updateBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest) {
         BlogVoteID blogVoteID = new BlogVoteID();
         blogVoteID.setUserId(userId);
@@ -156,13 +151,16 @@ public class VoteServiceImpl implements VoteService {
 
     protected void updateCommentVoteCount (CommentVote commentVote) {
         Comment comment = commentRepository.findById(commentVote.getId().getCommentId());
+        System.out.println(comment);
         if(commentVote.getType() == Vote.up)
             comment.setVotes(comment.getVotes() + 1);
         else
             comment.setVotes(comment.getVotes() - 1);
+        commentRepository.save(comment);
     }
 
     @Override
+    @Transactional
     public CommentVoteResponse addCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
         CommentVoteID commentVoteID = new CommentVoteID();
         commentVoteID.setUserId(userId); commentVoteID.setCommentId(commentId);
@@ -182,6 +180,7 @@ public class VoteServiceImpl implements VoteService {
     }
 
     @Override
+    @Transactional
     public CommentVoteResponse updateCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
         CommentVoteID commentVoteID = new CommentVoteID();
         commentVoteID.setUserId(userId); commentVoteID.setCommentId(commentId);
