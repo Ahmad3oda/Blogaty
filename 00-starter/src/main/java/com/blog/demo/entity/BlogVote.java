@@ -14,6 +14,7 @@ public class BlogVote {
     @EmbeddedId
     private BlogVoteID id;
 
+    @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private Vote type;
 }
