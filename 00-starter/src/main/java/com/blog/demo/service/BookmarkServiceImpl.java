@@ -31,13 +31,9 @@ public class BookmarkServiceImpl implements BookmarkService {
     }
 
     private BookmarkResponse getBookmarks(List<Long> bookmarksIds) {
-        BookmarkResponse bookmarkResponse = new BookmarkResponse();
         List<BlogResponse> bookmarks = new ArrayList<>();
-        bookmarksIds.forEach(bookmarkId -> {
-            bookmarks.add(blogService.findByBlogId(Math.toIntExact(bookmarkId)));
-        });
-        bookmarkResponse.setBookmarkedBlogs(bookmarks);
-        return bookmarkResponse;
+        bookmarksIds.forEach(bookmarkId -> bookmarks.add(blogService.findByBlogId(Math.toIntExact(bookmarkId))));
+        return new BookmarkResponse(bookmarks);
     }
 
     @Override
@@ -48,26 +44,15 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     @Override
     public void addBookmark(int userId, int blogId) {
-        BookmarkID id = new BookmarkID();
-        id.setUserId(userId); id.setBlogId(blogId);
-
         Bookmark bookmark = bookmarkRepository.findById_UserIdAndId_BlogId(userId, blogId);
         if(bookmark != null) {
             throw new GlobalException("Bookmark already exists - user id: " + userId+ ", blog id: " + blogId);
         }
-
-        bookmark = new Bookmark();
-        bookmark.setId(id);
-        bookmarkRepository.save(bookmark);
+        bookmarkRepository.save(new Bookmark(new BookmarkID(userId, blogId)));
     }
 
     @Override
     public void deleteBookmark(int userId, int blogId) {
-        BookmarkID id = new BookmarkID();
-        id.setUserId(userId); id.setBlogId(blogId);
-
-        Bookmark bookmark = new Bookmark(id);
-
-        bookmarkRepository.delete(bookmark);
+        bookmarkRepository.delete(new Bookmark(new BookmarkID(userId, blogId)));
     }
 }
