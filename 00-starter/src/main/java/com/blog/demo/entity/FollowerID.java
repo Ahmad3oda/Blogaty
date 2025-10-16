@@ -14,8 +14,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class FollowerID implements Serializable {
     @Column(name = "user_id", nullable = false)
-    private int userId;
+    private int receiverId;
 
     @Column(name = "follower_id", nullable = false)
-    private int followerId;
+    private int actorId;
 }

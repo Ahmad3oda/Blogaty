@@ -3,12 +3,12 @@ package com.blog.demo.service;
 import com.blog.demo.CacheService;
 import com.blog.demo.dto.FollowResponse;
 import com.blog.demo.dto.UserResponse;
-import com.blog.demo.entity.Follower;
-import com.blog.demo.entity.FollowerID;
+import com.blog.demo.entity.*;
 import com.blog.demo.exception.GlobalException;
 import com.blog.demo.repository.FollowerRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,13 +18,16 @@ public class FollowServiceImpl implements FollowService{
     CacheService cache;
     UserService userService;
     FollowerRepository followerRepository;
+    NotificationService notificationService;
 
     FollowServiceImpl (CacheService cache,
                        UserService userService,
-                       FollowerRepository followerRepository){
+                       FollowerRepository followerRepository,
+                       NotificationService notificationService){
         this.cache = cache;
         this.userService = userService;
         this.followerRepository = followerRepository;
+        this.notificationService = notificationService;
     }
 
     private FollowResponse toResponse(List<Long> followersIds){
@@ -32,6 +35,25 @@ public class FollowServiceImpl implements FollowService{
         followersIds.forEach(followerId -> followers.add(userService.findById(Math.toIntExact(followerId))));
 
         return new FollowResponse(followers.size(), followers);
+    }
+
+    private void sendNotification(Follower follower){
+
+        User actor = follower.getActor();
+        User receiver = follower.getReceiver();
+        Notification notification = new Notification(
+                null,
+                receiver,
+                actor,
+                NotificationType.FOLLOWED,
+                (long) receiver.getId(),
+                TargetType.USER,
+                cache.getUsername(Math.toIntExact(actor.getId())) + " followed you.",
+                LocalDateTime.now(),
+                false
+        );
+
+        notificationService.addNotification(notification);
     }
 
     @Override
@@ -42,16 +64,24 @@ public class FollowServiceImpl implements FollowService{
 
     @Override
     public void addFollower(int followingId, int followerId) {
-        Follower follower = followerRepository.findById_UserIdAndId_FollowerId(followingId, followerId);
+        Follower follower = followerRepository.findByReceiver_IdAndActor_Id(followingId, followerId);
         if(follower != null){
             throw new GlobalException("Follower relationship exists - following id: "
                     + followingId + ", followers id: " + followerId);
         }
-        followerRepository.save(new Follower(new FollowerID(followingId, followerId)));
+        User actor = new User(); actor.setId(Math.toIntExact(followingId));
+        User receiver = new User(); receiver.setId(Math.toIntExact(followerId));
+
+        follower = new Follower(receiver, actor);
+        sendNotification(follower);
+
+        followerRepository.save(follower);
     }
 
     @Override
     public void removeFollower(int followingId, int followerId) {
-        followerRepository.delete(new Follower(new FollowerID(followingId, followerId)));
+        User actor = new User(); actor.setId(Math.toIntExact(followingId));
+        User receiver = new User(); receiver.setId(Math.toIntExact(followerId));
+        followerRepository.delete(new Follower(receiver, actor));
     }
 }

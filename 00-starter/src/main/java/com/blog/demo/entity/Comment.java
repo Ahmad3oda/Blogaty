@@ -20,13 +20,27 @@ public class Comment {
     @Column(name = "comment_id")
     private int id;
 
-    @Column(name = "user_id", nullable = false)
-    private int userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "blog_id", nullable = false)
-    private int blogId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "blog_id", nullable = false)
+    private Blog blog;
 
     private String content;
     private LocalDateTime date;
     private int votes;
+
+    public Comment(User user, Blog blog, String content, LocalDateTime now, int i) {
+        this.user = user;
+        this.blog = blog;
+        this.content = content;
+        this.date = now;
+        this.votes = i;
+    }
+
+    public Comment(int commentId) {
+        this.id = commentId;
+    }
 }

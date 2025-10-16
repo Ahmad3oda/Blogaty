@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface BlogVoteRepository extends JpaRepository<BlogVote, Long> {
 
-    @Query("SELECT s from BlogVote s where s.id.blogId = :blogId")
+    @Query("SELECT s from BlogVote s where s.id.blog.blogId = :blogId")
     List<BlogVote> findAllByBlogId(@Param("blogId") Long blogId);
 
     BlogVote findById(BlogVoteID blogVoteID);

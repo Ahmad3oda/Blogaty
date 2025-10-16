@@ -1,8 +1,6 @@
 package com.blog.demo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +12,11 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BlogVoteID implements Serializable {
-    @Column(name = "user_id", nullable = false)
-    private int userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "blog_id", nullable = false)
-    private int blogId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "blog_id", nullable = false)
+    private Blog blog;
 }

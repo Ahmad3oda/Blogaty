@@ -1,5 +1,6 @@
 package com.blog.demo.controller;
 
+import com.blog.demo.dto.BlogRequest;
 import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.entity.Blog;
 import com.blog.demo.service.BlogService;
@@ -37,10 +38,8 @@ public class BlogController {
     }
 
     @PostMapping("user/{userId}")
-    public BlogResponse createBlog(@PathVariable int userId, @RequestBody Blog blog) {
-        blog.setUserId(userId);
-        blog.setDate(LocalDateTime.now());
-        return blogService.save(blog);
+    public BlogResponse createBlog(@PathVariable int userId, @RequestBody BlogRequest blog) {
+        return blogService.save(userId, blog);
     }
 
     @PatchMapping("/{blogId}")

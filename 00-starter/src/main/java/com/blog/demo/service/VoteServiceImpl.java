@@ -7,27 +7,27 @@ import com.blog.demo.dto.CommentVoteRequest;
 import com.blog.demo.dto.CommentVoteResponse;
 import com.blog.demo.entity.*;
 import com.blog.demo.exception.GlobalException;
-import com.blog.demo.repository.BlogRepository;
-import com.blog.demo.repository.BlogVoteRepository;
-import com.blog.demo.repository.CommentRepository;
-import com.blog.demo.repository.CommentVoteRepository;
+import com.blog.demo.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class VoteServiceImpl implements VoteService {
 
+    private final UserRepository userRepository;
     CacheService cache;
     ObjectMapper objectMapper;
     BlogVoteRepository blogVoteRepository;
     BlogRepository blogRepository;
     CommentVoteRepository commentVoteRepository;
     CommentRepository commentRepository;
+    final NotificationService notificationService;
 
     @Autowired
     public VoteServiceImpl(CacheService cache,
@@ -35,23 +35,44 @@ public class VoteServiceImpl implements VoteService {
                            BlogVoteRepository blogVoteRepository,
                            BlogRepository blogRepository,
                            CommentVoteRepository commentVoteRepository,
-                           CommentRepository commentRepository) {
+                           CommentRepository commentRepository, NotificationService notificationService, UserRepository userRepository) {
         this.cache = cache;
         this.objectMapper = objectMapper;
         this.blogVoteRepository = blogVoteRepository;
         this.blogRepository = blogRepository;
         this.commentVoteRepository = commentVoteRepository;
         this.commentRepository = commentRepository;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
     }
 
     // -------- Blog Vote Section --------
 
-    protected BlogVoteResponse toResponse(BlogVote blogVote) {
-        BlogVoteResponse blogVoteResponse = new BlogVoteResponse();
 
-        blogVoteResponse.setVote(blogVote.getType());
-        blogVoteResponse.setUsername(cache.getUsername(blogVote.getId().getUserId()));
-        return blogVoteResponse;
+    private void sendNotification(BlogVote blogVote){
+
+        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlog().getBlogId());
+
+        User actor = userRepository.findById((long) blogVote.getId().getUser().getId()).get();
+        User receiver = userRepository.findById((long) blog.getUser().getId()).get();
+        Notification notification = new Notification(
+                null,
+                receiver,
+                actor,
+                NotificationType.BLOG_VOTED,
+                (long) receiver.getId(),
+                TargetType.BLOG,
+                actor.getUsername() + " voted on your blog: " + blog.getContent(),
+                LocalDateTime.now(),
+                false
+        );
+
+        notificationService.addNotification(notification);
+    }
+
+
+    protected BlogVoteResponse toResponse(BlogVote blogVote) {
+        return new BlogVoteResponse(blogVote);
     }
 
     protected List<BlogVoteResponse> toResponse(List<BlogVote> blogVoteList) {
@@ -67,7 +88,7 @@ public class VoteServiceImpl implements VoteService {
     }
 
     protected void updateVoteCount (BlogVote blogVote) {
-        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlogId());
+        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlog().getBlogId());
         if(blogVote.getType() == Vote.up)
             blog.setVotes(blog.getVotes() + 1);
         else
@@ -78,30 +99,32 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public BlogVoteResponse addBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest) {
-        BlogVoteID blogVoteID = new BlogVoteID();
-        blogVoteID.setUserId(userId);
-        blogVoteID.setBlogId(blogId);
+        User user = userRepository.findById((long) userId).get();
+        BlogVoteID blogVoteID = new BlogVoteID(user, new Blog(blogId));
 
         BlogVote blogVote = blogVoteRepository.findById(blogVoteID);
         if(blogVote != null) {
             throw new GlobalException("Vote already exists - blog id: " + blogId + ", user id: " + userId);
         }
+        if(blogVoteRequest.getVote() == null){
+            throw new GlobalException("Vote is not found.");
+        }
 
-        blogVote = new BlogVote();
-        blogVote.setId(blogVoteID);
-        blogVote.setType(blogVoteRequest.vote);
+        blogVote = new BlogVote(
+                blogVoteID,
+                blogVoteRequest.vote
+        );
         blogVoteRepository.save(blogVote);
 
         updateVoteCount(blogVote);
+        sendNotification(blogVote);
         return toResponse(blogVote);
     }
 
     @Override
     @Transactional
     public BlogVoteResponse updateBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest) {
-        BlogVoteID blogVoteID = new BlogVoteID();
-        blogVoteID.setUserId(userId);
-        blogVoteID.setBlogId(blogId);
+        BlogVoteID blogVoteID = new BlogVoteID(new User(userId), new Blog(blogId));
 
         BlogVote blogVote = blogVoteRepository.findById(blogVoteID);
         if(blogVote == null) {
@@ -128,12 +151,30 @@ public class VoteServiceImpl implements VoteService {
 
     // -------- Comment Vote Section --------
 
-    protected CommentVoteResponse toCommentResponse(CommentVote commentVote) {
-        CommentVoteResponse commentVoteResponse = new CommentVoteResponse();
+    private void sendNotification(CommentVote commentVote){
 
-        commentVoteResponse.setVote(commentVote.getType());
-        commentVoteResponse.setUsername(cache.getUsername(commentVote.getId().getUserId()));
-        return commentVoteResponse;
+        Comment comment = commentRepository.findById(commentVote.getId().getComment().getId());
+
+        User actor = userRepository.findById((long) commentVote.getId().getUser().getId()).get();
+        User receiver = userRepository.findById((long) comment.getUser().getId()).get();
+        Notification notification = new Notification(
+                null,
+                receiver,
+                actor,
+                NotificationType.COMMENT_VOTED,
+                (long) receiver.getId(),
+                TargetType.COMMENT,
+                actor.getUsername() + " voted on your comment: " + comment.getContent(),
+                LocalDateTime.now(),
+                false
+        );
+
+        notificationService.addNotification(notification);
+    }
+
+
+    protected CommentVoteResponse toCommentResponse(CommentVote commentVote) {
+        return new CommentVoteResponse(commentVote);
     }
 
     protected List<CommentVoteResponse> toCommentResponse(List<CommentVote> commentVoteList) {
@@ -150,7 +191,7 @@ public class VoteServiceImpl implements VoteService {
     }
 
     protected void updateCommentVoteCount (CommentVote commentVote) {
-        Comment comment = commentRepository.findById(commentVote.getId().getCommentId());
+        Comment comment = commentRepository.findById(commentVote.getId().getComment().getId());
         System.out.println(comment);
         if(commentVote.getType() == Vote.up)
             comment.setVotes(comment.getVotes() + 1);
@@ -162,8 +203,8 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public CommentVoteResponse addCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
-        CommentVoteID commentVoteID = new CommentVoteID();
-        commentVoteID.setUserId(userId); commentVoteID.setCommentId(commentId);
+        User user = userRepository.findById((long) userId).get();
+        CommentVoteID commentVoteID = new CommentVoteID(user, new Comment(commentId));
 
         CommentVote commentVote = commentVoteRepository.findById(commentVoteID);
         if(commentVote != null) {
@@ -176,14 +217,15 @@ public class VoteServiceImpl implements VoteService {
         commentVoteRepository.save(commentVote);
 
         updateCommentVoteCount(commentVote);
+        sendNotification(commentVote);
         return toCommentResponse(commentVote);
     }
 
     @Override
     @Transactional
     public CommentVoteResponse updateCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
-        CommentVoteID commentVoteID = new CommentVoteID();
-        commentVoteID.setUserId(userId); commentVoteID.setCommentId(commentId);
+        User user = userRepository.findById((long) userId).get();
+        CommentVoteID commentVoteID = new CommentVoteID(user, new Comment(commentId));
 
         CommentVote commentVote = commentVoteRepository.findById(commentVoteID);
         if(commentVote == null) {

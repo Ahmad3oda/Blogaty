@@ -17,8 +17,9 @@ public class Blog {
     @Column(name = "blog_id")
     private int blogId;
 
-    @Column(name = "user_id", nullable = false)
-    private int userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(length = 200)
     private String content;
@@ -27,4 +28,15 @@ public class Blog {
     private int votes;
     private int comments;
 
+    public Blog(User user, String content, LocalDateTime now, int i, int i1) {
+        this.user = user;
+        this.content = content;
+        this.date = now;
+        this.votes = i;
+        this.comments = i1;
+    }
+
+    public Blog(int blogId){
+        this.blogId = blogId;
+    }
 }

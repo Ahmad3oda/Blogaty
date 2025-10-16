@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface CommentVoteRepository extends JpaRepository<CommentVote, Long> {
 
-    @Query("SELECT s from CommentVote s where s.id.commentId = :commentId")
+    @Query("SELECT s from CommentVote s where s.id.comment.id = :commentId")
     List<CommentVote> findAllByCommentId(@Param("commentId") Long commentId);
 
     CommentVote findById(CommentVoteID commentVoteID);

@@ -3,6 +3,7 @@ package com.blog.demo.service;
 import com.blog.demo.CacheService;
 import com.blog.demo.dto.BlogRequest;
 import com.blog.demo.dto.BlogResponse;
+import com.blog.demo.entity.User;
 import com.blog.demo.repository.BlogRepository;
 import com.blog.demo.entity.Blog;
 import com.blog.demo.exception.GlobalException;
@@ -12,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +33,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     protected BlogResponse toResponse(Blog blog) {
-        BlogResponse blogResponse = objectMapper.convertValue(blog, BlogResponse.class);
-        blogResponse.setUsername(cache.getUsername(blogResponse.getUserId()));
-        return blogResponse;
+        return new BlogResponse(blog);
     }
 
     protected List<BlogResponse> toResponse(List<Blog> blogs) {
@@ -75,7 +75,13 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     @Transactional
-    public BlogResponse save(Blog blog) {
+    public BlogResponse save(int userId, BlogRequest blogRequest) {
+        Blog blog = new Blog(
+                new User(userId),
+                blogRequest.getContent(),
+                LocalDateTime.now(),
+                0, 0
+        );
         return toResponse(blogRepository.save(blog));
     }
 

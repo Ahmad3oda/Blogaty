@@ -22,4 +22,8 @@ public class User {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    public User(int id) {
+        this.id = id;
+    }
 }
