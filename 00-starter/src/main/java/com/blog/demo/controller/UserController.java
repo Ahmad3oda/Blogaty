@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -32,8 +33,13 @@ public class UserController {
     }
 
     @PostMapping
-    public UserResponse addUser(@RequestBody User user){
+    public UserResponse addUser(@RequestBody UserRequest user){
         return userService.addUser(user);
+    }
+
+    @PatchMapping
+    public UserResponse addUser(@RequestBody Map<String, Object> payload){
+        return userService.updateUser(payload);
     }
 
     @DeleteMapping("/{userId}")

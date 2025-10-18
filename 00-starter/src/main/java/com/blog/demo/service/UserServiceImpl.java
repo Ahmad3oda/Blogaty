@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -31,9 +32,7 @@ public class UserServiceImpl implements UserService{
 
 
     public UserResponse toResponse(User user) {
-        UserResponse userResponse = objectMapper.convertValue(user, UserResponse.class);
-        userResponse.setUsername(cache.getUsername(userResponse.getId()));
-        return userResponse;
+        return new UserResponse(user);
     }
 
 
@@ -68,16 +67,33 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public UserResponse addUser(User user) {
-        User dbUser = userRepository.save(user);
-        cache.putUser(dbUser);
+    public UserResponse addUser(UserRequest user) {
+        User dbUser = objectMapper.convertValue(user, User.class);
+        if(dbUser.getPassword().isEmpty() || dbUser.getUsername().isEmpty()){
+            throw new GlobalException("Username or password is empty.");
+        }
+        dbUser = userRepository.save(dbUser);
         return toResponse(dbUser);
     }
 
     @Override
     @Transactional
+    public UserResponse updateUser(Map<String, Object> payload) {
+        if(!payload.containsKey("username")){
+            throw new GlobalException("Username is empty");
+        }
+        User dbUser = userRepository.findByUsername(String.valueOf(payload.get("username"))).get();
+        if(dbUser.getUsername() == null){
+            throw new GlobalException("User not found - username: " + payload.get("username"));
+        }
+
+        dbUser.setPassword(String.valueOf(payload.get("password")));
+        return toResponse(userRepository.save(dbUser));
+    }
+
+    @Override
+    @Transactional
     public void deleteById(int id) {
-        cache.removeUser(id);
         userRepository.deleteById((long) id);
     }
 }

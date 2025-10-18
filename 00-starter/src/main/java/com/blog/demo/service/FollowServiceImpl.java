@@ -48,7 +48,7 @@ public class FollowServiceImpl implements FollowService{
                 NotificationType.FOLLOWED,
                 (long) receiver.getId(),
                 TargetType.USER,
-                cache.getUsername(Math.toIntExact(actor.getId())) + " followed you.",
+                actor.getUsername() + " followed you.",
                 LocalDateTime.now(),
                 false
         );
