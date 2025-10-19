@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService{
         User dbUser = userRepository.findByUsername(String.valueOf(payload.get("username")))
                 .orElseThrow(() -> new GlobalException("User not found - username: " + payload.get("username")));
 
-        dbUser.setPassword(String.valueOf(payload.get("password")));
+        dbUser.setPassword(passwordEncoder.encode(String.valueOf(payload.get("password"))));
         return toResponse(userRepository.save(dbUser));
     }
 

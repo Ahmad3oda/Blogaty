@@ -20,9 +20,49 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests( configure ->
                 configure
-                        .requestMatchers("/users/register", "/users/login").permitAll()
-//                        .requestMatchers(HttpMethod.PATCH,"/users").hasRole("USER")
-//                        .requestMatchers(HttpMethod.DELETE, "api/employees/**").hasRole("ADMIN")
+                        // --- Public endpoints ---
+                        .requestMatchers(HttpMethod.POST, "/users/login", "/users/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/blogs", "/blogs/{blogId}",
+                                "/comments/blog/{blogId}", "/votes/blog/{blogId}",
+                                "/votes/comment/{commentId}").permitAll()
+
+                        // --- Bookmarks ---
+                        .requestMatchers(HttpMethod.GET, "/bookmarks/user/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/bookmarks/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/bookmarks/**").hasAnyAuthority("USER", "ADMIN")
+
+                        // --- Followers ---
+                        .requestMatchers(HttpMethod.GET, "/followers/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/followers/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/followers/**").hasAnyAuthority("USER", "ADMIN")
+
+                        // --- Notifications ---
+                        .requestMatchers(HttpMethod.GET, "/notifications/user/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/notifications/**").hasAnyAuthority("USER", "ADMIN")
+
+                        // --- Blogs ---
+                        .requestMatchers(HttpMethod.GET, "/blogs/user/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/blogs/user/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/blogs/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/blogs/**").hasAuthority("ADMIN")
+
+                        // --- Comments ---
+                        .requestMatchers(HttpMethod.GET, "/comments/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/comments/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/comments/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/comments/**").hasAuthority("ADMIN")
+
+                        // --- Votes ---
+                        .requestMatchers(HttpMethod.GET, "/votes/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/votes/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/votes/**").hasAnyAuthority("USER", "ADMIN")
+
+                        // --- Users ---
+                        .requestMatchers(HttpMethod.GET, "/users").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/{userId}").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/users").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users/**").hasAuthority("ADMIN")
+
                         .anyRequest().authenticated()
         );
         http.csrf(csrf -> csrf.disable());
