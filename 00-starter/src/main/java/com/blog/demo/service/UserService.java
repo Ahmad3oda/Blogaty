@@ -10,10 +10,11 @@ import java.util.Map;
 
 @Service
 public interface UserService {
+    String login(UserRequest userRequest);
     List<UserResponse> findAll();
     UserResponse findById(int id);
     UserResponse findByUsername(String username);
-    UserResponse addUser(UserRequest user);
+    UserResponse register(UserRequest user);
     UserResponse updateUser(Map <String, Object> payload);
     void deleteById(int id);
 }

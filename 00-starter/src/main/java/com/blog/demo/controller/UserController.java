@@ -5,9 +5,13 @@ import com.blog.demo.dto.UserRequest;
 import com.blog.demo.dto.UserResponse;
 import com.blog.demo.entity.User;
 import com.blog.demo.service.UserService;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,9 +36,19 @@ public class UserController {
         return userService.findById(userId);
     }
 
-    @PostMapping
-    public UserResponse addUser(@RequestBody UserRequest user){
-        return userService.addUser(user);
+    @PostMapping("/register")
+    public UserResponse register(@RequestBody UserRequest user){
+        return userService.register(user);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserRequest user){
+        String token = userService.login(user);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping
