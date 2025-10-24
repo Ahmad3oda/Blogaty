@@ -1,6 +1,6 @@
 package com.blog.demo.service;
 
-import com.blog.demo.RedisConfig;
+import com.blog.demo.cache.RedisConfig;
 import com.blog.demo.dto.FollowResponse;
 import com.blog.demo.dto.UserResponse;
 import com.blog.demo.entity.*;

@@ -1,6 +1,6 @@
 package com.blog.demo.service;
 
-import com.blog.demo.RedisConfig;
+import com.blog.demo.cache.RedisConfig;
 import com.blog.demo.dto.BlogVoteRequest;
 import com.blog.demo.dto.BlogVoteResponse;
 import com.blog.demo.dto.CommentVoteRequest;

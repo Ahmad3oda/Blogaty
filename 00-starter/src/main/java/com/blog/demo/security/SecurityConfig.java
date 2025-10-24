@@ -25,7 +25,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/blogs", "/blogs/{blogId}",
                                 "/comments/blog/{blogId}", "/votes/blog/{blogId}",
                                 "/votes/comment/{commentId}").permitAll()
-
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         // --- Bookmarks ---
                         .requestMatchers(HttpMethod.GET, "/bookmarks/user/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/bookmarks/**").hasAnyAuthority("USER", "ADMIN")
