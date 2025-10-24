@@ -3,8 +3,17 @@ spring:
       name: cruddemo
   datasource:
       url: jdbc:mysql://localhost:3306/blog_directory
-      username: springstudent
-      password: springstudent
+      username: ouda
+      password: password
+
+
+  redis:
+    host: localhost
+    port: 6379
+  cache:
+    type: redis
+
+
 
 jwt:
   secret: bVYp7uF83m6Zs8jF4kLd9xP0rTn2qWe5yHcXzBvN8mRq3sGfD1aJkLpOeRtYwUi

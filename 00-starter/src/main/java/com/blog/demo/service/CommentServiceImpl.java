@@ -1,7 +1,6 @@
 package com.blog.demo.service;
 
-import com.blog.demo.CacheService;
-import com.blog.demo.dto.BlogResponse;
+import com.blog.demo.RedisConfig;
 import com.blog.demo.dto.CommentRequest;
 import com.blog.demo.dto.CommentResponse;
 import com.blog.demo.entity.*;
@@ -26,7 +25,7 @@ import java.util.Optional;
 public class CommentServiceImpl implements CommentService {
 
 
-    CacheService cache;
+    RedisConfig cache;
     ObjectMapper objectMapper;
     private final CommentRepository commentRepository;
     private final BlogRepository blogRepository;
@@ -34,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private final NotificationService notificationService;
 
     @Autowired
-    public CommentServiceImpl(CacheService cache,
+    public CommentServiceImpl(RedisConfig cache,
                               ObjectMapper objectMapper,
                               CommentRepository commentRepository,
                               BlogRepository blogRepository, UserRepository userRepository,

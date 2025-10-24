@@ -1,6 +1,6 @@
 package com.blog.demo.service;
 
-import com.blog.demo.CacheService;
+import com.blog.demo.RedisConfig;
 import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.dto.BookmarkResponse;
 import com.blog.demo.entity.Bookmark;
@@ -16,11 +16,11 @@ import java.util.List;
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
 
-    CacheService cache;
+    RedisConfig cache;
     BookmarkRepository bookmarkRepository;
     BlogRepository blogRepository;
     BlogService blogService;
-    public BookmarkServiceImpl(CacheService cache,
+    public BookmarkServiceImpl(RedisConfig cache,
                                BookmarkRepository bookmarkRepository,
                                BlogRepository blogRepository,
                                BlogService blogService) {

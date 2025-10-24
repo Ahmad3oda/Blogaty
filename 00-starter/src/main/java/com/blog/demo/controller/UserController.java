@@ -1,13 +1,9 @@
 package com.blog.demo.controller;
 
-import com.blog.demo.CacheService;
 import com.blog.demo.dto.UserRequest;
 import com.blog.demo.dto.UserResponse;
-import com.blog.demo.entity.User;
 import com.blog.demo.service.UserService;
-import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

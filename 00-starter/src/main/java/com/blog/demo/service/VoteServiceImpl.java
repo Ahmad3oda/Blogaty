@@ -1,6 +1,6 @@
 package com.blog.demo.service;
 
-import com.blog.demo.CacheService;
+import com.blog.demo.RedisConfig;
 import com.blog.demo.dto.BlogVoteRequest;
 import com.blog.demo.dto.BlogVoteResponse;
 import com.blog.demo.dto.CommentVoteRequest;
@@ -21,7 +21,7 @@ import java.util.List;
 public class VoteServiceImpl implements VoteService {
 
     private final UserRepository userRepository;
-    CacheService cache;
+    RedisConfig cache;
     ObjectMapper objectMapper;
     BlogVoteRepository blogVoteRepository;
     BlogRepository blogRepository;
@@ -30,7 +30,7 @@ public class VoteServiceImpl implements VoteService {
     final NotificationService notificationService;
 
     @Autowired
-    public VoteServiceImpl(CacheService cache,
+    public VoteServiceImpl(RedisConfig cache,
                            ObjectMapper objectMapper,
                            BlogVoteRepository blogVoteRepository,
                            BlogRepository blogRepository,

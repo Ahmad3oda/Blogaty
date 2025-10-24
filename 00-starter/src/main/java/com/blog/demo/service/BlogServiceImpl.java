@@ -1,6 +1,6 @@
 package com.blog.demo.service;
 
-import com.blog.demo.CacheService;
+import com.blog.demo.RedisConfig;
 import com.blog.demo.dto.BlogRequest;
 import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.entity.User;
@@ -10,7 +10,11 @@ import com.blog.demo.exception.GlobalException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,12 +25,12 @@ import java.util.Map;
 @Service
 public class BlogServiceImpl implements BlogService {
 
-    CacheService cache;
+    RedisConfig cache;
     ObjectMapper objectMapper;
     private final BlogRepository blogRepository;
 
     @Autowired
-    public BlogServiceImpl(CacheService cache, BlogRepository blogRepository, ObjectMapper objectMapper) {
+    public BlogServiceImpl(RedisConfig cache, BlogRepository blogRepository, ObjectMapper objectMapper) {
         this.cache = cache;
         this.blogRepository = blogRepository;
         this.objectMapper = objectMapper;
@@ -36,7 +40,7 @@ public class BlogServiceImpl implements BlogService {
         return new BlogResponse(blog);
     }
 
-    protected List<BlogResponse> toResponse(List<Blog> blogs) {
+    protected List<BlogResponse> toResponse(@NonNull List<Blog> blogs) {
         List<BlogResponse> blogResponses = new ArrayList<>();
         blogs.forEach(blog -> blogResponses.add(toResponse(blog)));
         return blogResponses;
@@ -56,6 +60,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
+    @Cacheable(value = "blogs", key = "#blogId")
     public BlogResponse findByBlogId(int blogId) {
         Blog blog = blogRepository.findByBlogId(blogId);
         if (blog == null) {
@@ -75,7 +80,8 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     @Transactional
-    public BlogResponse save(int userId, BlogRequest blogRequest) {
+    @CachePut(value = "blogs", key = "#result.blogId")
+    public BlogResponse save(int userId, @NonNull BlogRequest blogRequest) {
         Blog blog = new Blog(
                 new User(userId),
                 blogRequest.getContent(),
@@ -87,13 +93,12 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     @Transactional
-    public BlogResponse update(Map<String, Object> payload){
+    @CachePut(value = "blogs", key = "#result.blogId")
+    public BlogResponse update(@NonNull Map<String, Object> payload){
         Blog dbBlog = __findByBlogId((int) payload.get("blogId"));
 
-        // match payload to blogRequest, removing unwanted elements.
         BlogRequest blogRequest = objectMapper.convertValue(payload, BlogRequest.class);
 
-        // blogId & content only remains to map
         ObjectNode payloadNd = objectMapper.convertValue(blogRequest, ObjectNode.class);
         ObjectNode blog = objectMapper.convertValue(dbBlog, ObjectNode.class);
 
@@ -104,7 +109,8 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     @Transactional
-    public void deleteById(int id) {
-        blogRepository.deleteByBlogId(id);
+    @CacheEvict(value = "blogs", key = "#blogId")
+    public void deleteById(int blogId) {
+        blogRepository.deleteByBlogId(blogId);
     }
 }

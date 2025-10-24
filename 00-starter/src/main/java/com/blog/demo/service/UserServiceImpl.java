@@ -1,10 +1,7 @@
 package com.blog.demo.service;
 
-import com.blog.demo.CacheService;
-import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.dto.UserRequest;
 import com.blog.demo.dto.UserResponse;
-import com.blog.demo.entity.Blog;
 import com.blog.demo.entity.Role;
 import com.blog.demo.repository.UserRepository;
 import com.blog.demo.entity.User;
@@ -21,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

@@ -1,6 +1,6 @@
 package com.blog.demo.service;
 
-import com.blog.demo.CacheService;
+import com.blog.demo.RedisConfig;
 import com.blog.demo.dto.FollowResponse;
 import com.blog.demo.dto.UserResponse;
 import com.blog.demo.entity.*;
@@ -15,12 +15,12 @@ import java.util.List;
 @Service
 public class FollowServiceImpl implements FollowService{
 
-    CacheService cache;
+    RedisConfig cache;
     UserService userService;
     FollowerRepository followerRepository;
     NotificationService notificationService;
 
-    FollowServiceImpl (CacheService cache,
+    FollowServiceImpl (RedisConfig cache,
                        UserService userService,
                        FollowerRepository followerRepository,
                        NotificationService notificationService){

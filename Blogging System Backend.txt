@@ -1,5 +1,16 @@
 Blogging System Backend
 
+To be added:
+- Redis Caching Layer
+- WebSocket for notifications (and possibly for new posts of comments)
+- Docker
+- Some searching real-time tool
+
+Finished:
+- Notification Service
+- JWT stuff & Spring Security
+
+
 Features:
 - Post blogs 
 - Save a blog
