@@ -1,6 +1,7 @@
 package com.blog.demo.service;
 
 import com.blog.demo.cache.RedisConfig;
+import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.dto.CommentRequest;
 import com.blog.demo.dto.CommentResponse;
 import com.blog.demo.entity.*;
@@ -11,7 +12,11 @@ import com.blog.demo.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,29 +27,16 @@ import java.util.Optional;
 
 
 @Service
+@RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
 
-    RedisConfig cache;
-    ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
     private final CommentRepository commentRepository;
     private final BlogRepository blogRepository;
+    private final BlogService blogService;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
-
-    @Autowired
-    public CommentServiceImpl(RedisConfig cache,
-                              ObjectMapper objectMapper,
-                              CommentRepository commentRepository,
-                              BlogRepository blogRepository, UserRepository userRepository,
-                              NotificationService notificationService) {
-        this.cache = cache;
-        this.commentRepository = commentRepository;
-        this.objectMapper = objectMapper;
-        this.blogRepository = blogRepository;
-        this.userRepository = userRepository;
-        this.notificationService = notificationService;
-    }
 
     protected CommentResponse toResponse(Comment comment) {
         return new CommentResponse(comment);
@@ -57,7 +49,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void sendNotification(Comment comment){
-
         Blog blog = blogRepository.findByBlogId(comment.getBlog().getBlogId());
         Optional<User> opActor = userRepository.findById((long) comment.getUser().getId());
         if(opActor.isEmpty()){
@@ -78,11 +69,11 @@ public class CommentServiceImpl implements CommentService {
         );
         System.out.println(blog);
         System.out.println(notification);
-
         notificationService.addNotification(notification);
     }
 
     @Override
+    @Cacheable(value = "comments", key = "#commentId")
     public CommentResponse getByCommentId(int commentId) {
         Comment comment = commentRepository.findById(commentId);
         if (comment == null) {
@@ -106,8 +97,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @CachePut(value = "comments", key = "#result.id")
     public CommentResponse add(int userId, int blogId, CommentRequest comment) {
-        Blog blog = blogRepository.findByBlogId(blogId);
+        BlogResponse blog = blogService.findByBlogId(blogId);
 
         if(blog == null){
             throw new GlobalException("Blog not found - id: " + blogId);
@@ -119,38 +111,15 @@ public class CommentServiceImpl implements CommentService {
                 comment.getContent(),
                 LocalDateTime.now(), 0
         );
-
-        incComment(blogId);
+        blogService.incComment(blogId);
         sendNotification(dbComment);
-
         return toResponse(commentRepository.save(dbComment));
-//        return toResponse(dbComment);
     }
 
-    private void incComment(int blogId) {
-        Blog blog = blogRepository.findByBlogId(blogId);
-        if (blog == null) {
-            throw new GlobalException("Blog Not Found - id: " + blogId);
-        }
-
-        int comments = blog.getComments() + 1;
-        blog.setComments(comments);
-
-        blogRepository.save(blog);
-    }
-    private void decComment(int blogId) {
-        Blog blog = blogRepository.findByBlogId(blogId);
-        if (blog == null) {
-            throw new GlobalException("Blog Not Found - id: " + blogId);
-        }
-
-        int comments = blog.getComments() - 1;
-        blog.setComments(comments);
-        blogRepository.save(blog);
-    }
 
     @Override
     @Transactional
+    @CachePut(value = "comments", key = "#result.id")
     public CommentResponse update(Map<String, Object> payload) {
         Comment dbComment = __getByCommentId((int) payload.get("commentId"));
 
@@ -166,9 +135,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "comments", key = "#commentId")
     public void deleteByCommentId(int commentId) {
         Comment comment = commentRepository.findById(commentId);
-        decComment(comment.getBlog().getBlogId());
+        blogService.decComment(comment.getBlog().getBlogId());
         commentRepository.deleteById((long) commentId);
     }
 }

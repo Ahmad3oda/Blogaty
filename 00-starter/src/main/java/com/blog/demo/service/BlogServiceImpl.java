@@ -3,7 +3,9 @@ package com.blog.demo.service;
 import com.blog.demo.cache.RedisConfig;
 import com.blog.demo.dto.BlogRequest;
 import com.blog.demo.dto.BlogResponse;
+import com.blog.demo.entity.BlogVote;
 import com.blog.demo.entity.User;
+import com.blog.demo.entity.Vote;
 import com.blog.demo.repository.BlogRepository;
 import com.blog.demo.entity.Blog;
 import com.blog.demo.exception.GlobalException;
@@ -105,6 +107,40 @@ public class BlogServiceImpl implements BlogService {
         blog.setAll(payloadNd);
         dbBlog = objectMapper.convertValue(blog, Blog.class);
         return toResponse(blogRepository.save(dbBlog));
+    }
+
+    @CachePut(value = "blogs", key = "#result.blogId")
+    public BlogResponse incComment(int blogId) {
+        Blog blog = blogRepository.findByBlogId(blogId);
+        if (blog == null) {
+            throw new GlobalException("Blog Not Found - id: " + blogId);
+        }
+        int comments = blog.getComments() + 1;
+        blog.setComments(comments);
+
+        return toResponse(blogRepository.save(blog));
+    }
+
+    @CachePut(value = "blogs", key = "#result.blogId")
+    public BlogResponse decComment(int blogId) {
+        Blog blog = blogRepository.findByBlogId(blogId);
+        if (blog == null) {
+            throw new GlobalException("Blog Not Found - id: " + blogId);
+        }
+        int comments = blog.getComments() - 1;
+        blog.setComments(comments);
+        return toResponse(blogRepository.save(blog));
+    }
+
+    @CachePut(value = "blogs", key = "#result.blogId")
+    public BlogResponse updateBlogVoteCount (BlogVote blogVote) {
+        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlog().getBlogId());
+        if(blogVote.getType() == Vote.up)
+            blog.setVotes(blog.getVotes() + 1);
+        else
+            blog.setVotes(blog.getVotes() - 1);
+
+        return toResponse(blogRepository.save(blog));
     }
 
     @Override

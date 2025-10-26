@@ -3,6 +3,7 @@ package com.blog.demo.service;
 import com.blog.demo.dto.BlogRequest;
 import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.entity.Blog;
+import com.blog.demo.entity.BlogVote;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -18,4 +19,7 @@ public interface BlogService {
     BlogResponse update(Map<String, Object> payload);
     void deleteById(int id);
 
+    BlogResponse decComment(int blogId);
+    BlogResponse incComment(int blogId);
+    BlogResponse updateBlogVoteCount(BlogVote blogVote);
 }

@@ -10,6 +10,7 @@ import com.blog.demo.exception.GlobalException;
 import com.blog.demo.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,37 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class VoteServiceImpl implements VoteService {
 
     private final UserRepository userRepository;
-    RedisConfig cache;
-    ObjectMapper objectMapper;
-    BlogVoteRepository blogVoteRepository;
-    BlogRepository blogRepository;
-    CommentVoteRepository commentVoteRepository;
-    CommentRepository commentRepository;
-    final NotificationService notificationService;
-
-    @Autowired
-    public VoteServiceImpl(RedisConfig cache,
-                           ObjectMapper objectMapper,
-                           BlogVoteRepository blogVoteRepository,
-                           BlogRepository blogRepository,
-                           CommentVoteRepository commentVoteRepository,
-                           CommentRepository commentRepository, NotificationService notificationService, UserRepository userRepository) {
-        this.cache = cache;
-        this.objectMapper = objectMapper;
-        this.blogVoteRepository = blogVoteRepository;
-        this.blogRepository = blogRepository;
-        this.commentVoteRepository = commentVoteRepository;
-        this.commentRepository = commentRepository;
-        this.notificationService = notificationService;
-        this.userRepository = userRepository;
-    }
+    private final BlogVoteRepository blogVoteRepository;
+    private final BlogRepository blogRepository;
+    private final BlogService blogService;
+    private final CommentVoteRepository commentVoteRepository;
+    private final CommentRepository commentRepository;
+    private final NotificationService notificationService;
 
     // -------- Blog Vote Section --------
-
-
     private void sendNotification(BlogVote blogVote){
 
         Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlog().getBlogId());
@@ -87,14 +69,6 @@ public class VoteServiceImpl implements VoteService {
         return toResponse(blogVotes);
     }
 
-    protected void updateVoteCount (BlogVote blogVote) {
-        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlog().getBlogId());
-        if(blogVote.getType() == Vote.up)
-            blog.setVotes(blog.getVotes() + 1);
-        else
-            blog.setVotes(blog.getVotes() - 1);
-        blogVoteRepository.save(blogVote);
-    }
 
     @Override
     @Transactional
@@ -116,7 +90,7 @@ public class VoteServiceImpl implements VoteService {
         );
         blogVoteRepository.save(blogVote);
 
-        updateVoteCount(blogVote);
+        blogService.updateBlogVoteCount(blogVote);
         sendNotification(blogVote);
         return toResponse(blogVote);
     }
@@ -137,8 +111,8 @@ public class VoteServiceImpl implements VoteService {
         blogVote.setType(blogVoteRequest.vote);
         blogVoteRepository.save(blogVote);
 
-        updateVoteCount(blogVote);
-        updateVoteCount(blogVote);
+        blogService.updateBlogVoteCount(blogVote);
+        blogService.updateBlogVoteCount(blogVote);
         return toResponse(blogVote);
     }
 
