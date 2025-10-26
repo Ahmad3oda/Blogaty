@@ -67,8 +67,6 @@ public class CommentServiceImpl implements CommentService {
                 LocalDateTime.now(),
                 false
         );
-        System.out.println(blog);
-        System.out.println(notification);
         notificationService.addNotification(notification);
     }
 
@@ -116,7 +114,6 @@ public class CommentServiceImpl implements CommentService {
         return toResponse(commentRepository.save(dbComment));
     }
 
-
     @Override
     @Transactional
     @CachePut(value = "comments", key = "#result.id")
@@ -131,6 +128,17 @@ public class CommentServiceImpl implements CommentService {
         dbComment = objectMapper.convertValue(responseNode, Comment.class);
         dbComment.setDate(LocalDateTime.now());
         return toResponse(commentRepository.save(dbComment));
+    }
+
+    @CachePut(value = "comments", key = "#result.id")
+    public CommentResponse updateCommentVoteCount (CommentVote commentVote) {
+        Comment comment = commentRepository.findById(commentVote.getId().getComment().getId());
+        System.out.println(comment);
+        if(commentVote.getType() == Vote.up)
+            comment.setVotes(comment.getVotes() + 1);
+        else
+            comment.setVotes(comment.getVotes() - 1);
+        return toResponse(commentRepository.save(comment));
     }
 
     @Override

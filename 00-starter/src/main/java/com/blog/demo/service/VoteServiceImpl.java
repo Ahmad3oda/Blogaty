@@ -28,6 +28,7 @@ public class VoteServiceImpl implements VoteService {
     private final BlogService blogService;
     private final CommentVoteRepository commentVoteRepository;
     private final CommentRepository commentRepository;
+    private final CommentService commentService;
     private final NotificationService notificationService;
 
     // -------- Blog Vote Section --------
@@ -164,15 +165,6 @@ public class VoteServiceImpl implements VoteService {
         return toCommentResponse(commentVotes);
     }
 
-    protected void updateCommentVoteCount (CommentVote commentVote) {
-        Comment comment = commentRepository.findById(commentVote.getId().getComment().getId());
-        System.out.println(comment);
-        if(commentVote.getType() == Vote.up)
-            comment.setVotes(comment.getVotes() + 1);
-        else
-            comment.setVotes(comment.getVotes() - 1);
-        commentRepository.save(comment);
-    }
 
     @Override
     @Transactional
@@ -190,7 +182,7 @@ public class VoteServiceImpl implements VoteService {
         commentVote.setType(commentVoteRequest.vote);
         commentVoteRepository.save(commentVote);
 
-        updateCommentVoteCount(commentVote);
+        commentService.updateCommentVoteCount(commentVote);
         sendNotification(commentVote);
         return toCommentResponse(commentVote);
     }
@@ -212,8 +204,8 @@ public class VoteServiceImpl implements VoteService {
         commentVote.setType(commentVoteRequest.vote);
         commentVoteRepository.save(commentVote);
 
-        updateCommentVoteCount(commentVote);
-        updateCommentVoteCount(commentVote);
+        commentService.updateCommentVoteCount(commentVote);
+        commentService.updateCommentVoteCount(commentVote);
         return toCommentResponse(commentVote);
     }
 }
