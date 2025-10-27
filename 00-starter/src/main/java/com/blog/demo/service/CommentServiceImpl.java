@@ -12,18 +12,21 @@ import com.blog.demo.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -37,18 +40,19 @@ public class CommentServiceImpl implements CommentService {
     private final BlogService blogService;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final CacheManager cacheManager;
 
-    protected CommentResponse toResponse(Comment comment) {
+    protected CommentResponse toResponse(@NonNull Comment comment) {
         return new CommentResponse(comment);
     }
 
-    protected List<CommentResponse> toResponse(List<Comment> comments) {
+    protected List<CommentResponse> toResponse(@NonNull List<Comment> comments) {
         List<CommentResponse> commentResponses = new ArrayList<>();
         comments.forEach(comment -> commentResponses.add(toResponse(comment)));
         return commentResponses;
     }
 
-    private void sendNotification(Comment comment){
+    private void sendNotification(@NonNull Comment comment){
         Blog blog = blogRepository.findByBlogId(comment.getBlog().getBlogId());
         Optional<User> opActor = userRepository.findById((long) comment.getUser().getId());
         if(opActor.isEmpty()){
@@ -63,7 +67,7 @@ public class CommentServiceImpl implements CommentService {
                 NotificationType.COMMENTED,
                 (long) receiver.getId(),
                 TargetType.USER,
-                actor.getUsername() + " commented on your post: " + comment.getBlog().getContent(),
+                actor.getUsername() + " commented on your post: " + blog.getContent(),
                 LocalDateTime.now(),
                 false
         );
@@ -77,6 +81,7 @@ public class CommentServiceImpl implements CommentService {
         if (comment == null) {
             throw new GlobalException("Comment Not Found - id: " + commentId);
         }
+        System.out.println(comment);
         return toResponse(comment);
     }
 
@@ -90,8 +95,36 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentResponse> getCommentsByBlogId(int blogId) {
-        List<Comment> comments = commentRepository.findAllByBlog_BlogId(blogId);
-        return toResponse(comments);
+        return toResponse(commentRepository.findAllByBlog_BlogId(blogId));
+    }
+
+    @Override
+    @Cacheable(value = "blog_comments", key = "#blogId")
+    public List<CommentResponse> getRecentComments(int blogId, int size) {
+        return toResponse(commentRepository
+                .findTopCommentsByBlogId(blogId, PageRequest.of(0, size)));
+    }
+
+    private void cacheComment(Comment comment){
+        int blogId = comment.getBlog().getBlogId();
+        Cache cache = cacheManager.getCache("blog_comments");
+
+        if (cache != null) {
+            List<CommentResponse> cached = cache.get(blogId, List.class);
+            if (cached != null) {
+                cached.addFirst(toResponse(comment));
+                if (cached.size() > 5)
+                    cached = new ArrayList<>(cached.subList(0, 5));
+                else
+                    cached = new ArrayList<>(cached);
+                cache.put(blogId, cached);
+            }
+        }
+    }
+
+    @Override
+    public List<CommentResponse> getComments(int blogId, int page, int size) {
+        return toResponse(commentRepository.findTopCommentsByBlogId(blogId, PageRequest.of(page, size)));
     }
 
     @Override
@@ -111,13 +144,14 @@ public class CommentServiceImpl implements CommentService {
         );
         blogService.incComment(blogId);
         sendNotification(dbComment);
+        cacheComment(dbComment);
         return toResponse(commentRepository.save(dbComment));
     }
 
     @Override
     @Transactional
     @CachePut(value = "comments", key = "#result.id")
-    public CommentResponse update(Map<String, Object> payload) {
+    public CommentResponse update(@NonNull Map<String, Object> payload) {
         Comment dbComment = __getByCommentId((int) payload.get("commentId"));
 
         CommentRequest commentRequest = objectMapper.convertValue(payload, CommentRequest.class);
@@ -131,9 +165,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @CachePut(value = "comments", key = "#result.id")
-    public CommentResponse updateCommentVoteCount (CommentVote commentVote) {
+    public CommentResponse updateCommentVoteCount (@NonNull CommentVote commentVote) {
         Comment comment = commentRepository.findById(commentVote.getId().getComment().getId());
-        System.out.println(comment);
         if(commentVote.getType() == Vote.up)
             comment.setVotes(comment.getVotes() + 1);
         else

@@ -5,16 +5,19 @@ spring:
       url: jdbc:mysql://localhost:3306/blog_directory
       username: ouda
       password: password
-
-
-  redis:
-    host: localhost
-    port: 6379
+  data:
+    redis:
+      host: localhost
+      port: 6379
   cache:
     type: redis
 
-
-
+logging:
+  level:
+    org.springframework.data.redis: DEBUG
+    org.springframework.cache: DEBUG
+    org.springframework.cache.interceptor: TRACE
+    org.springframework.cache.support: TRACE
 jwt:
   secret: bVYp7uF83m6Zs8jF4kLd9xP0rTn2qWe5yHcXzBvN8mRq3sGfD1aJkLpOeRtYwUi
 

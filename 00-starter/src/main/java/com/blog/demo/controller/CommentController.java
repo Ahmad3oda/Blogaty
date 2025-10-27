@@ -25,10 +25,19 @@ public class CommentController {
         return commentService.getByCommentId(commentId);
     }
 
+
     @GetMapping("/blog/{blogId}")
-    public List<CommentResponse> getCommentByBlog(@PathVariable int blogId) {
-        return commentService.getCommentsByBlogId(blogId);
+    public List<CommentResponse> getComments(@PathVariable int blogId,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "10") int size) {
+        if(page == 0) return commentService.getRecentComments(blogId, size);
+        else return commentService.getComments(blogId, page, size);
     }
+
+//    @GetMapping("/blog/{blogId}")
+//    public List<CommentResponse> getCommentsByBlog(@PathVariable int blogId) {
+//        return commentService.getCommentsByBlogId(blogId);
+//    }
 
     @PostMapping("/{userId}/{blogId}")
     public CommentResponse addComment(@PathVariable int userId,

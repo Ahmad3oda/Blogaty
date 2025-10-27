@@ -1,18 +1,17 @@
 package com.blog.demo.dto;
 
 import com.blog.demo.entity.Comment;
-import com.blog.demo.entity.User;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CommentResponse {
+public class CommentResponse implements Serializable {
     private int id;
     private UserResponse author;
     private int blogId;

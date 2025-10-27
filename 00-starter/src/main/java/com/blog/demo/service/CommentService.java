@@ -13,9 +13,12 @@ import java.util.Map;
 public interface CommentService {
     CommentResponse getByCommentId(int commentId);
     List<CommentResponse> getCommentsByBlogId(int blogId);
+    List<CommentResponse> getComments(int blogId, int page, int size);
+    List<CommentResponse> getRecentComments(int blogId, int size);
     CommentResponse add(int userId, int blogId, CommentRequest comment);
     CommentResponse update(Map<String, Object> payload);
     void deleteByCommentId(int commentId);
 
     CommentResponse updateCommentVoteCount(CommentVote commentVote);
+
 }
