@@ -2,7 +2,7 @@
 
 A **Spring Boot RESTful backend** for a full-featured blogging platform — supporting **user authentication, blog management, comments, voting, bookmarks, followers, and notifications**.
 
-Built with **clean architecture**, **DTO pattern**, **Redis caching**, and **JWT-based Spring Security**.
+Built with **layerd onion architecture**, **Redis caching**, and **JWT-based Spring Security**.
 
 ---
 
@@ -14,7 +14,7 @@ Built with **clean architecture**, **DTO pattern**, **Redis caching**, and **JWT
 
 ## 🧱 Project Architecture
 
-The system follows a modular **service-oriented architecture** with clear separation of concerns between layers:
+The system follows a modular **Layered Onion Architecture (Service-Oriented)** with clear separation of concerns between layers:
 
 - **Entity Layer:**  
   Each major domain (User, Blog, Comment, Vote, Bookmark, Follower, Notification) has its own JPA entity class mapped to the corresponding database table using ORM (Hibernate/JPA).
