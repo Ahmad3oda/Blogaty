@@ -159,8 +159,8 @@ When loading more comments, the next 10 are fetched directly from the database.
 ## 🧮 Database ERD
 
 <img src="https://github.com/user-attachments/assets/1d1a18d3-2f88-4741-ab3c-df6a605adee8" width="500" />
+<sub><i>Generated using reverse engineering by MySql Workbench.</i></sub>
 
-<sub><i>Generated using reverse enginnering from MySQL Workbench.</i></sub>
 ---
 
 ## Data & Architecture
