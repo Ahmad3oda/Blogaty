@@ -1,4 +1,3 @@
-```markdown
 # Blog System Backend
 
 A **Spring Boot RESTful backend** for a full-featured blogging platform — supporting **user authentication, blog management, comments, voting, bookmarks, followers, and notifications**.
@@ -200,8 +199,3 @@ Java Backend Developer | Competitive Programmer
 🔗 [LinkedIn](https://linkedin.com/in/real-ahmad-ouda)
 
 ---
-
-```
-
-Would you like me to make this README include **example JSON requests/responses** for key endpoints (like blog creation, commenting, or login)? That makes it perfect for developers testing the API with Postman.
-```
