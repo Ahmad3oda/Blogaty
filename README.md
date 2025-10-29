@@ -158,7 +158,7 @@ When loading more comments, the next 10 are fetched directly from the database.
 ---
 ## 🧮 Database ERD
 
-<img src="https://github.com/user-attachments/assets/1d1a18d3-2f88-4741-ab3c-df6a605adee8" width="400" />
+<img src="https://github.com/user-attachments/assets/1d1a18d3-2f88-4741-ab3c-df6a605adee8" width="500" />
 
 ---
 
