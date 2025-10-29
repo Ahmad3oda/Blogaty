@@ -10,6 +10,32 @@ Built with **clean architecture**, **DTO pattern**, **Redis caching**, and **JWT
 
 [http://localhost:8080](http://localhost:8080)
 
+---
+
+## 🧱 Project Architecture
+
+The system follows a modular **service-oriented architecture** with clear separation of concerns between layers:
+
+- **Entity Layer:**  
+  Each major domain (User, Blog, Comment, Vote, Bookmark, Follower, Notification) has its own JPA entity class mapped to the corresponding database table using ORM (Hibernate/JPA).
+
+- **Repository Layer:**  
+  Every entity has a dedicated **JPA Repository interface** responsible only for direct data access related to that specific entity.  
+  Repositories never call other repositories directly.
+
+- **Service Layer:**  
+  Each entity has its own **Service class** that contains the business logic.  
+  Services interact with their own repositories and may communicate with other services if data from another entity is required (for example, when fetching a user’s blogs or sending notifications after a comment).
+
+- **DTO Layer:**  
+  To ensure clean and secure data flow, each entity has **Request and Response DTOs** (e.g., `BlogRequest`, `BlogResponse`).  
+  Services convert entities to DTOs before sending them to the controllers, maintaining encapsulation and preventing exposure of internal data.
+
+- **Controller Layer:**  
+  REST Controllers handle HTTP requests and responses, delegating logic to their corresponding services.  
+  They only work with DTOs, ensuring a consistent and secure API interface.
+
+This layered design promotes maintainability, scalability, and testability while ensuring each module remains independent and reusable.
 
 ---
 
@@ -116,12 +142,6 @@ Authorization: Bearer <your_token>
 
 ---
 
-## DB ERD
-
-<img width="924" height="813" alt="image" src="https://github.com/user-attachments/assets/1d1a18d3-2f88-4741-ab3c-df6a605adee8" />
-
----
-
 ## ⚙️ Caching Strategy
 
 Redis caching is integrated to boost performance and reduce database load.
@@ -134,6 +154,11 @@ Redis caching is integrated to boost performance and reduce database load.
 | `notifications::{userId}` | Caches latest notifications per user |
 
 When loading more comments, the next 10 are fetched directly from the database.
+
+---
+## Database ERD
+
+<img width="924" height="813" alt="image" src="https://github.com/user-attachments/assets/1d1a18d3-2f88-4741-ab3c-df6a605adee8" />
 
 ---
 
