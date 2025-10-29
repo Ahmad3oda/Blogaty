@@ -1,14 +1,25 @@
 Blogging System Backend
 
 To be added:
-- Redis Caching Layer
+- Try Scheduling (@Scheduled)
 - WebSocket for notifications (and possibly for new posts of comments)
-- Docker
 - Some searching real-time tool
+- Indexing and query optimization basics
+- Check CORS and API versioning
+
+SOLID principles
+Design patterns (Singleton, Factory, Observer, etc.)
+Layered architecture (Controller → Service → Repository)
+DTOs and Mappers
+Unit Testing (JUnit, Mockito)
+Logging and monitoring (SLF4J, Logback)
+Versioning and migrations
 
 Finished:
 - Notification Service
 - JWT stuff & Spring Security
+- Redis Caching Layer
+- Docker
 
 
 Features:
