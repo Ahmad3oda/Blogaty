@@ -1,0 +1,15 @@
+.register-page-container {
+  display: flex;
+  align-items: center;       /* centers vertically */
+  justify-content: center;   /* centers horizontally */
+  min-height: 100vh;         /* full screen height */
+  background: linear-gradient(135deg, #f0f4ff, #e6f0ff);
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}

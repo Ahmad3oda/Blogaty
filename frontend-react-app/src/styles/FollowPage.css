@@ -1,0 +1,185 @@
+/* --------------------------- */
+/* FOLLOWERS / FOLLOWINGS PAGE */
+/* --------------------------- */
+
+/* Page background */
+body {
+  background-color: #f5f7fa;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+/* Container */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* Toggle Buttons */
+.mb-3.d-flex.gap-2 {
+  justify-content: center;
+  margin-bottom: 30px !important;
+}
+
+.mb-3.d-flex.gap-2 .btn {
+  min-width: 120px;
+  font-weight: 600;
+  border-radius: 25px;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
+}
+
+.mb-3.d-flex.gap-2 .btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Cards Table */
+.user-dashboard-info-box {
+  background-color: #fff;
+  /* border-radius: 12px; */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  width: 135%;
+  overflow-x: auto;
+}
+
+/* Table styling */
+.table.manage-candidates-top {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table.manage-candidates-top th {
+  text-align: left;
+    width: 190%;
+
+  color: #555;
+  font-weight: 600;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.table.manage-candidates-top td {
+  padding: 15px 10px;
+    width: 100%;
+
+  vertical-align: middle;
+}
+
+/* Follower / Following row */
+.followers-list {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* distribute space between columns */
+  border-bottom: 1px solid #f0f0f0;
+  padding: 15px 0;
+    width: 120%;
+
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.followers-list:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Avatar */
+.thumb {
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.thumb img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.thumb img:hover {
+  border-color: #007bff;
+}
+
+/* User Details */
+.follower-details h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.follower-details p {
+  font-size: 0.85rem;
+  color: #777;
+  margin: 0;
+}
+
+/* Followers Count */
+.text-center span {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #007bff;
+}
+
+/* Action Buttons */
+.btn-outline-danger.btn-sm,
+.btn-outline-primary.btn-sm {
+  border-radius: 25px;
+  font-size: 0.85rem;
+  padding: 6px 18px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-danger.btn-sm:hover {
+  background-color: #dc3545;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.btn-outline-primary.btn-sm:hover {
+  background-color: #007bff;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .followers-list {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .text-center {
+    text-align: left !important;
+    margin-top: 8px;
+  }
+
+  .btn-outline-danger.btn-sm,
+  .btn-outline-primary.btn-sm {
+    margin-top: 8px;
+  }
+}
+
+/* User info section (avatar + name) */
+.title.d-flex.align-items-center.gap-3 {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* space between avatar and name */
+  flex: 1;   /* take up remaining space */
+}
+
+/* Followers count */
+.text-center {
+  flex: 0 0 80px; /* fixed width so button is separated */
+  text-align: center;
+}
+
+/* Action button */
+.text-right {
+  flex: 0 0 140px; /* fixed width to avoid sticking */
+  text-align: right;
+}

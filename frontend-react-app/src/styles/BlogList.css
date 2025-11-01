@@ -1,0 +1,228 @@
+.content-area {
+  /* max-width: 800px;      limit width of main content */
+  margin-right: 20%;        /* center horizontally between sidebars */
+  /* padding: 20px;         inner spacing */
+  display: flex;
+  flex-direction: column;
+  /* gap: 20px; */
+  box-sizing: border-box;
+}
+
+
+/* =======================
+   Blog List Container
+======================= */
+.blog-list-container {
+  display: sticky;
+  flex-direction: column;
+  align-items: center;       /* horizontal centering */
+  justify-content: flex-start; /* vertical alignment: top of page */
+  /* max-width: 600px;          card width limit */
+  width: 60%;
+  margin: auto;        
+  /* margin-left: 10%;
+  margin-right: 20%; */
+
+  margin-top: 0%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+
+/* Title */
+.blog-list-title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 600;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+/* Blog Grid */
+.blog-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* =======================
+   Create Post Card
+======================= */
+.create-post-card {
+  position: sticky;
+  top: 70px;
+  z-index: 10;
+  background: #fff;
+  padding: 15px 20px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  margin: 0 auto 20px;
+}
+
+.create-post-card textarea {
+  resize: none;
+  border: 1px solid #ddd;
+  width: 100%;
+  padding: 10px;
+  font-size: 0.95rem;
+}
+
+.create-post-card button {
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* =======================
+   Blog Cards
+======================= */
+.blog-card {
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 15px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.blog-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Blog Card Inner Content */
+.blog-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.blog-card p {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.blog-card .blog-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #777;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+/* =======================
+   Blog Author / Content
+======================= */
+.blog-author {
+  font-weight: 600;
+  color: #007bff;
+  margin-bottom: 5px;
+}
+
+.blog-content {
+  font-size: 1rem;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+/* =======================
+   Load More Button
+======================= */
+.btn-load-more {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  margin-top: 20px;
+  padding: 10px 20px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-load-more:hover {
+  background-color: #0056b3;
+}
+
+/* No more posts message */
+.no-more {
+  margin-top: 20px;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+}
+
+/* =======================
+   Voting Controls
+======================= */
+.vote-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vote-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #777;
+  transition: color 0.2s ease;
+}
+
+.vote-btn.up:hover {
+  color: #28a745;
+}
+
+.vote-btn.down:hover {
+  color: #dc3545;
+}
+
+.vote-count {
+  font-weight: 600;
+  color: #333;
+}
+
+.vote-btn.up.active {
+  color: green;
+}
+
+.vote-btn.down.active {
+  color: red;
+}
+
+/* =======================
+   Responsive Design
+======================= */
+@media (max-width: 768px) {
+  .blog-list-container {
+    width: 95%;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+
+  .blog-card,
+  .create-post-card {
+    width: 100%;
+    padding: 15px;
+  }
+}
+
+.username-link {
+  color: #007bff;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.username-link:hover {
+  color: #0056b3;
+  /* text-decoration: underline; */
+}
