@@ -1,4 +1,4 @@
-# Blog System Backend (Outdated Repo)
+# Blog System Backend (Outdated readme file)
 
 A **Spring Boot RESTful backend** for a full-featured blogging platform — supporting **user authentication, blog management, comments, voting, bookmarks, followers, and notifications**.
 
