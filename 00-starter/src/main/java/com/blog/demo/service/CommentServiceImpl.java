@@ -66,7 +66,7 @@ public class CommentServiceImpl implements CommentService {
                 actor,
                 NotificationType.COMMENTED,
                 (long) receiver.getId(),
-                TargetType.USER,
+                TargetType.COMMENT,
                 actor.getUsername() + " commented on your post: " + blog.getContent(),
                 LocalDateTime.now(),
                 false

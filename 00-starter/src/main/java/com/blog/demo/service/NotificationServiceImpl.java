@@ -78,8 +78,10 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void addNotification(Notification notification) {
-        notificationRepository.save(notification);
-        cacheNotification(notification);
+        if(notification.getReceiver().getId() != notification.getActor().getId()){
+            notificationRepository.save(notification);
+            cacheNotification(notification);
+        }
     }
 
     @Override

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -50,9 +51,8 @@ public class BlogServiceImpl implements BlogService {
 
 
     @Override
-    public List<BlogResponse> findAll() {
-        List <Blog> blogs = blogRepository.findAll();
-        return toResponse(blogs);
+    public List<BlogResponse> findAll(int page, int size) {
+        return toResponse(blogRepository.findAllBlogs(PageRequest.of(page, size)));
     }
 
     @Override

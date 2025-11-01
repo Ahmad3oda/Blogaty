@@ -28,10 +28,17 @@ public class VoteController {
         return voteService.findAllBlogVotesByBlogId(blogId);
     }
 
+    @GetMapping("blog/{userId}/{blogId}")
+    public BlogVoteResponse getBlogVote(@PathVariable Long userId, @PathVariable Long blogId) {
+        return voteService.findSingleVoteStatus(userId, blogId);
+    }
+
     @PostMapping("/blog/{userId}/{blogId}")
     public BlogVoteResponse addBlogVote(@PathVariable int userId,
                                         @PathVariable int blogId,
                                         @RequestBody BlogVoteRequest blogVoteRequest) {
+
+        System.out.println(blogVoteRequest);
         return voteService.addBlogVote(userId, blogId, blogVoteRequest);
     }
 
@@ -39,6 +46,7 @@ public class VoteController {
     public BlogVoteResponse updateBlogVote(@PathVariable int userId,
                                            @PathVariable int blogId,
                                            @RequestBody BlogVoteRequest blogVoteRequest) {
+        System.out.println(blogVoteRequest);
         return voteService.updateBlogVote(userId, blogId, blogVoteRequest);
     }
 
@@ -52,6 +60,11 @@ public class VoteController {
     @GetMapping("/comment/{commentId}")
     public List<CommentVoteResponse> getCommentVotes(@PathVariable Long commentId) {
         return voteService.findAllCommentVotesByCommentId(commentId);
+    }
+
+    @GetMapping("comment/{userId}/{commentId}")
+    public CommentVoteResponse getCommentVote(@PathVariable Long userId, @PathVariable Long commentId) {
+        return voteService.findSingleCommentVoteStatus(userId, commentId);
     }
 
     @PostMapping("/comment/{userId}/{commentId}")

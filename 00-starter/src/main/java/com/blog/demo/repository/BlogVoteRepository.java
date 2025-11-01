@@ -19,4 +19,5 @@ public interface BlogVoteRepository extends JpaRepository<BlogVote, Long> {
     BlogVote findById(BlogVoteID blogVoteID);
 
     void deleteById(BlogVoteID vote);
+
 }

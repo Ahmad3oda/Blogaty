@@ -13,6 +13,11 @@ public interface FollowerRepository extends JpaRepository<Follower, Long> {
 
     @Query("SELECT f.receiver.id from Follower f where f.actor.id = :userId")
     List<Long> findFollowersIdByUserId(int userId);
-
     Follower findByReceiver_IdAndActor_Id(int id_userId, int id_followerId);
+
+    Integer countByReceiver_Id(int receiver_id);
+    Integer countByActor_Id(int actor_id);
+
+    @Query("SELECT f.actor.id from Follower f where f.receiver.id = :userId")
+    List<Long> findFollowingsIdByUserId(int userId);
 }

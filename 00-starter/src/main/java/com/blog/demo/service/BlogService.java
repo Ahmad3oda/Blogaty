@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Service
 public interface BlogService {
-    List<BlogResponse> findAll();
+    List<BlogResponse> findAll(int page, int size);
     List<BlogResponse> findAllByUserId(int userId);
     BlogResponse findByBlogId(int blogId);
     BlogResponse save(int userId, BlogRequest blogRequest);

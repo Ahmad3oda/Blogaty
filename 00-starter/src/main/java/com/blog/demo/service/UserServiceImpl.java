@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService{
                 new UsernamePasswordAuthenticationToken(userRequest.getUsername(), userRequest.getPassword())
         );
         User user = userRepository.findByUsername(userRequest.getUsername())
-                .orElseThrow();
+                .orElseThrow(() -> new GlobalException(userRequest.getUsername() + " is not found."));
         return jwtUtil.generateToken(user);
     }
 

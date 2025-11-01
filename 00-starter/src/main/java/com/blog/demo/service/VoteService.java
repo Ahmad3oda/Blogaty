@@ -14,11 +14,15 @@ public interface VoteService {
     List<BlogVoteResponse> findAllBlogVotesByBlogId(Long blogId);
     BlogVoteResponse addBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest);
     BlogVoteResponse updateBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest);
+
+    BlogVoteResponse findSingleVoteStatus(Long userId, Long commentId);
     void deleteBlogVote(BlogVoteID vote);
 
 
     List<CommentVoteResponse> findAllCommentVotesByCommentId(Long blogId);
+    CommentVoteResponse findSingleCommentVoteStatus(Long userId, Long commentId);
     CommentVoteResponse addCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest);
     CommentVoteResponse updateCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest);
+
 //    void deleteBlogVote(BlogVoteID vote);
 }

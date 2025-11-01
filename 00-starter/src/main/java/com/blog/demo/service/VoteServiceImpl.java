@@ -1,6 +1,5 @@
 package com.blog.demo.service;
 
-import com.blog.demo.cache.RedisConfig;
 import com.blog.demo.dto.BlogVoteRequest;
 import com.blog.demo.dto.BlogVoteResponse;
 import com.blog.demo.dto.CommentVoteRequest;
@@ -8,10 +7,8 @@ import com.blog.demo.dto.CommentVoteResponse;
 import com.blog.demo.entity.*;
 import com.blog.demo.exception.GlobalException;
 import com.blog.demo.repository.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -70,6 +67,11 @@ public class VoteServiceImpl implements VoteService {
         return toResponse(blogVotes);
     }
 
+
+    @Override
+    public BlogVoteResponse findSingleVoteStatus(Long userId, Long blogId) {
+        return toResponse(blogVoteRepository.findById(new BlogVoteID(userId, blogId)));
+    }
 
     @Override
     @Transactional
@@ -165,7 +167,10 @@ public class VoteServiceImpl implements VoteService {
         return toCommentResponse(commentVotes);
     }
 
-
+    @Override
+    public CommentVoteResponse findSingleCommentVoteStatus(Long userId, Long commentId) {
+        return toCommentResponse(commentVoteRepository.findById(new CommentVoteID(userId, commentId)));
+    }
     @Override
     @Transactional
     public CommentVoteResponse addCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
@@ -208,4 +213,5 @@ public class VoteServiceImpl implements VoteService {
         commentService.updateCommentVoteCount(commentVote);
         return toCommentResponse(commentVote);
     }
+
 }

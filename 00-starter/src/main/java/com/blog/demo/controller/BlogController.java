@@ -23,8 +23,11 @@ public class BlogController {
     }
 
     @GetMapping
-    public List<BlogResponse> getAllBlogs() {
-        return blogService.findAll();
+    public List<BlogResponse> getAllBlogs(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "10") int size) {
+
+        System.out.println(page);
+        return blogService.findAll(page, size);
     }
 
     @GetMapping("/user/{userId}")

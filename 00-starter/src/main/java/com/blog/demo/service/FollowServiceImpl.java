@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class FollowServiceImpl implements FollowService{
@@ -58,8 +60,12 @@ public class FollowServiceImpl implements FollowService{
 
     @Override
     public FollowResponse getFollowersById(int userId) {
-        List<Long> followersIds = followerRepository.findFollowersIdByUserId(userId);
-        return toResponse(followersIds);
+        return toResponse(followerRepository.findFollowingsIdByUserId(userId));
+    }
+
+    @Override
+    public FollowResponse getFollowingsById(int userId) {
+        return toResponse(followerRepository.findFollowersIdByUserId(userId));
     }
 
     @Override
@@ -79,9 +85,30 @@ public class FollowServiceImpl implements FollowService{
     }
 
     @Override
+    public Object getSuggestions(int userId) {
+        List<UserResponse> list = userService.findAll();
+        List<Long> followers = followerRepository.findFollowersIdByUserId(userId);
+
+        followers.add((long) userId);
+        return list.stream()
+                .filter(user -> !followers.contains((long) user.getId()))
+                .toList();
+    }
+
+
+    @Override
     public void removeFollower(int followingId, int followerId) {
         User actor = new User(); actor.setId(Math.toIntExact(followingId));
         User receiver = new User(); receiver.setId(Math.toIntExact(followerId));
-        followerRepository.delete(new Follower(receiver, actor));
+        followerRepository.delete(new Follower(actor, receiver));
+    }
+
+    @Override
+    public Map<String, Integer> getNumbers(int userId) {
+
+        Map<String, Integer> response = new HashMap<>();
+        response.put("followers", followerRepository.countByReceiver_Id(userId));
+        response.put("following", followerRepository.countByActor_Id(userId));
+        return response;
     }
 }
