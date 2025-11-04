@@ -70,7 +70,11 @@ public class VoteServiceImpl implements VoteService {
 
     @Override
     public BlogVoteResponse findSingleVoteStatus(Long userId, Long blogId) {
-        return toResponse(blogVoteRepository.findById(new BlogVoteID(userId, blogId)));
+        BlogVote blogVote = blogVoteRepository.findById(new BlogVoteID(userId, blogId));
+        if (blogVote == null) {
+            throw new GlobalException("Blog vote not found");
+        }
+        return toResponse(blogVote);
     }
 
     @Override
@@ -169,7 +173,11 @@ public class VoteServiceImpl implements VoteService {
 
     @Override
     public CommentVoteResponse findSingleCommentVoteStatus(Long userId, Long commentId) {
-        return toCommentResponse(commentVoteRepository.findById(new CommentVoteID(userId, commentId)));
+        CommentVote commentVote = commentVoteRepository.findById(new CommentVoteID(userId, commentId));
+        if (commentVote == null) {
+            throw new GlobalException("Comment vote not found");
+        }
+        return toCommentResponse(commentVote);
     }
     @Override
     @Transactional
