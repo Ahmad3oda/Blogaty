@@ -6,6 +6,7 @@ import com.blog.demo.dto.UserResponse;
 import com.blog.demo.entity.*;
 import com.blog.demo.exception.GlobalException;
 import com.blog.demo.repository.FollowerRepository;
+import com.blog.demo.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,15 +20,18 @@ public class FollowServiceImpl implements FollowService{
 
     RedisConfig cache;
     UserService userService;
+    UserRepository userRepository;
     FollowerRepository followerRepository;
     NotificationService notificationService;
 
     FollowServiceImpl (RedisConfig cache,
                        UserService userService,
+                       UserRepository userRepository,
                        FollowerRepository followerRepository,
                        NotificationService notificationService){
         this.cache = cache;
         this.userService = userService;
+        this.userRepository = userRepository;
         this.followerRepository = followerRepository;
         this.notificationService = notificationService;
     }
@@ -42,7 +46,7 @@ public class FollowServiceImpl implements FollowService{
     private void sendNotification(Follower follower){
 
         User actor = follower.getActor();
-        User receiver = follower.getReceiver();
+        User receiver = userRepository.findById(Long.valueOf(follower.getReceiver().getId())).get();
         Notification notification = new Notification(
                 null,
                 receiver,
@@ -50,7 +54,7 @@ public class FollowServiceImpl implements FollowService{
                 NotificationType.FOLLOWED,
                 (long) receiver.getId(),
                 TargetType.USER,
-                actor.getUsername() + " followed you.",
+                actor.getUsername() + " started following you.",
                 LocalDateTime.now(),
                 false
         );
@@ -75,8 +79,8 @@ public class FollowServiceImpl implements FollowService{
             throw new GlobalException("Follower relationship exists - following id: "
                     + followingId + ", followers id: " + followerId);
         }
-        User actor = new User(); actor.setId(Math.toIntExact(followingId));
-        User receiver = new User(); receiver.setId(Math.toIntExact(followerId));
+        User actor = new User(); actor.setId(Math.toIntExact(followerId));
+        User receiver = new User(); receiver.setId(Math.toIntExact(followingId));
 
         follower = new Follower(receiver, actor);
         sendNotification(follower);
@@ -100,7 +104,7 @@ public class FollowServiceImpl implements FollowService{
     public void removeFollower(int followingId, int followerId) {
         User actor = new User(); actor.setId(Math.toIntExact(followingId));
         User receiver = new User(); receiver.setId(Math.toIntExact(followerId));
-        followerRepository.delete(new Follower(actor, receiver));
+        followerRepository.delete(new Follower(receiver, actor));
     }
 
     @Override

@@ -2,7 +2,7 @@ Blogging System Backend
 
 To be added:
 - Try Scheduling (@Scheduled) - User spam blogs, every half an hour.
-- WebSocket for notifications (and possibly for new posts of comments)
+- SSE for notifications (and possibly for new posts of comments)
 - Some searching real-time tool
 - Indexing and query optimization basics
 - Check CORS and API versioning
