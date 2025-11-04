@@ -45,7 +45,7 @@ public class FollowServiceImpl implements FollowService{
 
     private void sendNotification(Follower follower){
 
-        User actor = follower.getActor();
+        User actor = userRepository.findById(Long.valueOf(follower.getActor().getId())).get();
         User receiver = userRepository.findById(Long.valueOf(follower.getReceiver().getId())).get();
         Notification notification = new Notification(
                 null,
@@ -73,14 +73,14 @@ public class FollowServiceImpl implements FollowService{
     }
 
     @Override
-    public void addFollower(int followingId, int followerId) {
-        Follower follower = followerRepository.findByReceiver_IdAndActor_Id(followingId, followerId);
+    public void addFollower(int receiverId, int actorId) {
+        Follower follower = followerRepository.findByReceiver_IdAndActor_Id(receiverId, actorId);
         if(follower != null){
-            throw new GlobalException("Follower relationship exists - following id: "
-                    + followingId + ", followers id: " + followerId);
+            throw new GlobalException("Follower relationship exists - receiver id: "
+                    + receiverId + ", followers id: " + actorId);
         }
-        User actor = new User(); actor.setId(Math.toIntExact(followerId));
-        User receiver = new User(); receiver.setId(Math.toIntExact(followingId));
+        User actor = new User(); actor.setId(Math.toIntExact(actorId));
+        User receiver = new User(); receiver.setId(Math.toIntExact(receiverId));
 
         follower = new Follower(receiver, actor);
         sendNotification(follower);
@@ -101,9 +101,9 @@ public class FollowServiceImpl implements FollowService{
 
 
     @Override
-    public void removeFollower(int followingId, int followerId) {
-        User actor = new User(); actor.setId(Math.toIntExact(followingId));
-        User receiver = new User(); receiver.setId(Math.toIntExact(followerId));
+    public void removeFollower(int receiverId, int actorId) {
+        User actor = new User(); actor.setId(Math.toIntExact(actorId));
+        User receiver = new User(); receiver.setId(Math.toIntExact(receiverId));
         followerRepository.delete(new Follower(receiver, actor));
     }
 

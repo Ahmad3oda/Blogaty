@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -41,13 +40,13 @@ public class FollowController {
         return ResponseEntity.ok(followService.getSuggestions(userId));
     }
 
-    @PostMapping("/{followingId}/{followerId}")
-    public void addFollower(@PathVariable int followingId, @PathVariable int followerId){
-        followService.addFollower(followingId, followerId);
+    @PostMapping("/{receiverId}/{actorId}")
+    public void addFollower(@PathVariable int receiverId, @PathVariable int actorId){
+        followService.addFollower(receiverId, actorId);
     }
 
-    @DeleteMapping("/{followingId}/{followerId}")
-    public void deleteFollower(@PathVariable int followingId, @PathVariable int followerId){
-        followService.removeFollower(followingId, followerId);
+    @DeleteMapping("/{receiverId}/{actorId}")
+    public void deleteFollower(@PathVariable int receiverId, @PathVariable int actorId){
+        followService.removeFollower(receiverId, actorId);
     }
 }
