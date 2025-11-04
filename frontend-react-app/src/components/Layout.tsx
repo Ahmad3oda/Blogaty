@@ -119,6 +119,12 @@ function Layout({ children }: LayoutProps) {
           </button>
           <button
             className="btn btn-outline-dark w-100"
+            onClick={() => navigate("/notifications")}
+          >
+            Notifications
+          </button>
+          <button
+            className="btn btn-outline-dark w-100"
             onClick={() => navigate("/settings")}
           >
             Settings

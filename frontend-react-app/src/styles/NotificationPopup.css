@@ -1,0 +1,41 @@
+.notification-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #2563eb; /* blue-600 */
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 9999;
+  animation: slideUp 0.4s ease, fadeOut 0.4s ease 4.6s forwards;
+  width: 320px;
+}
+
+.notification-popup p {
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.notification-popup small {
+  opacity: 0.8;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
