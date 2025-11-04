@@ -13,6 +13,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -49,6 +50,7 @@ public class SecurityConfig {
 
                         // --- Notifications ---
                         .requestMatchers(HttpMethod.GET, "/notifications/user/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/notifications/stream/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/notifications/**").hasAnyAuthority("USER", "ADMIN")
 
                         // --- Blogs ---

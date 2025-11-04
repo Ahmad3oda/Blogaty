@@ -1,5 +1,6 @@
 package com.blog.demo.service;
 
+import com.blog.demo.config.SseConfig;
 import com.blog.demo.dto.CommentResponse;
 import com.blog.demo.dto.NotificationDTO;
 import com.blog.demo.dto.NotificationResponse;
@@ -13,6 +14,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final CacheManager cacheManager;
+    private final SseConfig sseConfig;
 
     private NotificationResponse toResponse(List<Notification> notifications) {
 
@@ -80,6 +83,7 @@ public class NotificationServiceImpl implements NotificationService {
         if(notification.getReceiver().getId() != notification.getActor().getId()){
             notificationRepository.save(notification);
             cacheNotification(notification);
+            sseConfig.sendNotificationToUser(notification.getReceiver().getId(), notification);
         }
     }
 
