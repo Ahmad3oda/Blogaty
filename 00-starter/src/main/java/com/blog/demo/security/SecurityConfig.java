@@ -38,6 +38,10 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/auth/**").permitAll()
+
+                        // --- Search ---
+                        .requestMatchers(HttpMethod.GET, "/search/**").permitAll()
+
                         // --- Bookmarks ---
                         .requestMatchers(HttpMethod.GET, "/bookmarks/user/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/bookmarks/**").hasAnyAuthority("USER", "ADMIN")

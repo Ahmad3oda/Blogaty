@@ -17,4 +17,6 @@ public interface UserService {
     UserResponse register(UserRequest user);
     UserResponse updateUser(Map <String, Object> payload);
     void deleteById(int id);
+
+    List<UserResponse> findByUsernamePart(String searchTerm, int page, int size);
 }

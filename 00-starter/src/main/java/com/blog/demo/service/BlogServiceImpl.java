@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,18 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class BlogServiceImpl implements BlogService {
 
-    RedisConfig cache;
-    ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
     private final BlogRepository blogRepository;
-
-    @Autowired
-    public BlogServiceImpl(RedisConfig cache, BlogRepository blogRepository, ObjectMapper objectMapper) {
-        this.cache = cache;
-        this.blogRepository = blogRepository;
-        this.objectMapper = objectMapper;
-    }
 
     protected BlogResponse toResponse(Blog blog) {
         return new BlogResponse(blog);
@@ -59,6 +52,10 @@ public class BlogServiceImpl implements BlogService {
     public List<BlogResponse> findAllByUserId(int userId) {
         List <Blog> blogs = blogRepository.findAllByUserId(userId);
         return toResponse(blogs);
+    }
+
+    public List<BlogResponse> findByContent(String content, int page, int size) {
+        return toResponse(blogRepository.findByContent(content, PageRequest.of(page, size)));
     }
 
     @Override

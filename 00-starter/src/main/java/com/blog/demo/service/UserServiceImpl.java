@@ -10,6 +10,7 @@ import com.blog.demo.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +32,11 @@ public class UserServiceImpl implements UserService{
 
     public UserResponse toResponse(User user) {
         return new UserResponse(user);
+    }
+    public List<UserResponse> toResponse(List<User> users) {
+        List<UserResponse> userResponses = new ArrayList<>();
+        users.forEach(user -> userResponses.add(toResponse(user)));
+        return userResponses;
     }
 
     @Override
@@ -66,6 +72,10 @@ public class UserServiceImpl implements UserService{
         return toResponse(user);
     }
 
+    public List<UserResponse> findByUsernamePart(String username, int page, int size) {
+        return toResponse(userRepository.findByUsername(username, PageRequest.of(page, size)));
+    }
+
     @Override
     @Transactional
     public UserResponse register(UserRequest user) {
@@ -73,6 +83,7 @@ public class UserServiceImpl implements UserService{
         if(dbUser.getPassword().isEmpty() || dbUser.getUsername().isEmpty()){
             throw new GlobalException("Username or password is empty.");
         }
+
         dbUser.setPassword(passwordEncoder.encode(user.getPassword()));
         dbUser.setRole(Role.USER);
         dbUser = userRepository.save(dbUser);

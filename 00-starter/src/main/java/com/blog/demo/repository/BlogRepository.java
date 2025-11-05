@@ -1,6 +1,8 @@
 package com.blog.demo.repository;
 
 import com.blog.demo.entity.Blog;
+import lombok.NonNull;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +17,7 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
     List<Blog> findAllByUserId(int userId);
     Blog findByBlogId(int blogId);
     void deleteByBlogId(int id);
+
+    @Query("SELECT b FROM Blog b WHERE b.content LIKE CONCAT('%', :content, '%')")
+    List<Blog> findByContent(String content, PageRequest of);
 }

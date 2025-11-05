@@ -22,4 +22,6 @@ public interface BlogService {
     BlogResponse decComment(int blogId);
     BlogResponse incComment(int blogId);
     BlogResponse updateBlogVoteCount(BlogVote blogVote);
+
+    List<BlogResponse> findByContent(String searchTerm, int page, int size);
 }
