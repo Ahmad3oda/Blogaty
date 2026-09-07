@@ -145,7 +145,8 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           trivyignores: '.trivyignore'
-          trivy-args: '--skip-dirs nginx/certs'
+          skip-dirs: 'nginx/certs'
+          skip-files: 'nginx/certs/server.key'
 
   # ===========================================================================
   # Gate 4: Build & Push Docker Images (Depends on Gate 3, Push only)

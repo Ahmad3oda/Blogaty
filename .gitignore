@@ -1,4 +1,5 @@
 # Local SSL/TLS test certificates
+nginx/certs/
 nginx/certs/server.key
 nginx/certs/server.crt
 

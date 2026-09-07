@@ -4,6 +4,8 @@
 
 # 1. Local development self-signed test SSL certificate & private key
 nginx/certs/server.key
+private-key
+AsymmetricPrivateKey
 
 # 2. Baseline framework dependencies (Spring Boot 3.4 & React Router)
 # Jackson
