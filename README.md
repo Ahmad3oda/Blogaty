@@ -12,25 +12,21 @@
 
 ### 1. Running with Docker (Recommended)
 
-Start MySQL, Redis, Backend, and Frontend containers:
+Start the entire stack (MySQL, Redis, Spring Boot Backend, and React Frontend) with a single command:
 
 ```bash
-# 1. Package the backend JAR
-docker run --rm \
-  -v $(pwd)/00-starter:/app \
-  -v $(HOME)/.m2:/root/.m2 \
-  -w /app \
-  maven:3.9-eclipse-temurin-21 mvn clean package -DskipTests
+docker compose up -d --build
+```
 
-# 2. Build the backend and frontend images
-docker build -t blogaty-backend:latest 00-starter/
-docker build -t blogaty-frontend:latest frontend-react-app/
+To stop all services:
+```bash
+docker compose down
+```
 
-# 3. Launch services
-docker run -d --name blogaty-mysql -p 3306:3306 -e MYSQL_DATABASE=blog_directory -e MYSQL_USER=ouda -e MYSQL_PASSWORD=password -e MYSQL_ROOT_PASSWORD=rootpassword mysql:8.0
-docker run -d --name blogaty-redis -p 6379:6379 redis:7-alpine
-docker run -d --name blogaty-backend -p 8080:8080 --link blogaty-mysql:mysql --link blogaty-redis:redis -e DB_URL=jdbc:mysql://mysql:3306/blog_directory -e DB_USERNAME=ouda -e DB_PASSWORD=password -e REDIS_HOST=redis -e REDIS_PORT=6379 blogaty-backend:latest
-docker run -d --name blogaty-frontend -p 5173:5173 blogaty-frontend:latest
+To check service health and logs:
+```bash
+docker compose ps
+docker compose logs -f backend
 ```
 
 ### 2. Local Development Setup
