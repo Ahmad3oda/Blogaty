@@ -10,13 +10,21 @@
 - **Docker** & **Docker Compose**
 - *(Optional for local dev without Docker)*: JDK 21, Maven 3.9+, Node.js 20+
 
-### 1. Running with Docker (Recommended)
+### 1. Running with Docker & Nginx Gateway (Recommended)
 
-Start the entire stack (MySQL, Redis, Spring Boot Backend, and React Frontend) with a single command:
+Start the entire stack (MySQL, Redis, Spring Boot Backend, React Frontend, and Nginx Gateway) with a single command:
 
 ```bash
+# 1. Generate local SSL certificate (if not already generated)
+chmod +x nginx/generate-ssl.sh && ./nginx/generate-ssl.sh
+
+# 2. Launch the entire stack
 docker compose up -d --build
 ```
+
+- **Web Application (HTTPS):** [https://localhost](https://localhost)
+- **HTTP (Auto-redirects to HTTPS):** [http://localhost](http://localhost)
+- **Swagger UI (via Nginx):** [https://localhost/swagger-ui/index.html](https://localhost/swagger-ui/index.html)
 
 To stop all services:
 ```bash
