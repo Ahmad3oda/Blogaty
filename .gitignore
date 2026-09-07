@@ -7,3 +7,4 @@ nginx/certs/server.crt
 frontend-react-app/dist/
 frontend-react-app/node_modules/
 .m2/
+
