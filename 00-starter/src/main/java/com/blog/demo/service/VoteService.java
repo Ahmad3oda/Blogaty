@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
 public interface VoteService {
     List<BlogVoteResponse> findAllBlogVotesByBlogId(Long blogId);
     BlogVoteResponse addBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest);

@@ -11,13 +11,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BlogVoteRepository extends JpaRepository<BlogVote, Long> {
+public interface BlogVoteRepository extends JpaRepository<BlogVote, BlogVoteID> {
 
-    @Query("SELECT s from BlogVote s where s.id.blog.blogId = :blogId")
+    @Query("SELECT s from BlogVote s where s.id.blogId = :blogId")
     List<BlogVote> findAllByBlogId(@Param("blogId") Long blogId);
-
-    BlogVote findById(BlogVoteID blogVoteID);
-
-    void deleteById(BlogVoteID vote);
 
 }

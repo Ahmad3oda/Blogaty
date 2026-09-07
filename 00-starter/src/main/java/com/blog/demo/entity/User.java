@@ -3,8 +3,11 @@ package com.blog.demo.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,13 +20,17 @@ import java.util.List;
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    @EqualsAndHashCode.Include
+    private Long id;
 
     @Column(name = "username", unique = true, nullable = false)
     private String username;
@@ -36,7 +43,7 @@ public class User implements UserDetails {
     private Role role = Role.USER;
 
 
-    public User(int id) {
+    public User(Long id) {
         this.id = id;
     }
 

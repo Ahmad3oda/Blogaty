@@ -30,17 +30,18 @@ public class VoteServiceImpl implements VoteService {
 
     // -------- Blog Vote Section --------
     private void sendNotification(BlogVote blogVote){
+        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlogId())
+                .orElseThrow(() -> new GlobalException("Blog not found"));
 
-        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlog().getBlogId());
-
-        User actor = userRepository.findById((long) blogVote.getId().getUser().getId()).get();
-        User receiver = userRepository.findById((long) blog.getUser().getId()).get();
+        User actor = userRepository.findById(blogVote.getId().getUserId())
+                .orElseThrow(() -> new GlobalException("User not found"));
+        User receiver = blog.getUser();
         Notification notification = new Notification(
                 null,
                 receiver,
                 actor,
                 NotificationType.BLOG_VOTED,
-                (long) receiver.getId(),
+                blog.getBlogId(),
                 TargetType.BLOG,
                 actor.getUsername() + " voted on your blog: " + blog.getContent(),
                 LocalDateTime.now(),
@@ -49,7 +50,6 @@ public class VoteServiceImpl implements VoteService {
 
         notificationService.addNotification(notification);
     }
-
 
     protected BlogVoteResponse toResponse(BlogVote blogVote) {
         return new BlogVoteResponse(blogVote);
@@ -67,33 +67,35 @@ public class VoteServiceImpl implements VoteService {
         return toResponse(blogVotes);
     }
 
-
     @Override
     public BlogVoteResponse findSingleVoteStatus(Long userId, Long blogId) {
-        BlogVote blogVote = blogVoteRepository.findById(new BlogVoteID(userId, blogId));
-        if (blogVote == null) {
-            throw new GlobalException("Blog vote not found");
-        }
+        BlogVote blogVote = blogVoteRepository.findById(new BlogVoteID(userId, blogId))
+                .orElseThrow(() -> new GlobalException("Blog vote not found"));
         return toResponse(blogVote);
     }
 
     @Override
     @Transactional
     public BlogVoteResponse addBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest) {
-        User user = userRepository.findById((long) userId).get();
-        BlogVoteID blogVoteID = new BlogVoteID(user, new Blog(blogId));
+        BlogVoteID blogVoteID = new BlogVoteID((long) userId, (long) blogId);
 
-        BlogVote blogVote = blogVoteRepository.findById(blogVoteID);
-        if(blogVote != null) {
+        if (blogVoteRepository.findById(blogVoteID).isPresent()) {
             throw new GlobalException("Vote already exists - blog id: " + blogId + ", user id: " + userId);
         }
-        if(blogVoteRequest.getVote() == null){
+        if (blogVoteRequest.getVote() == null) {
             throw new GlobalException("Vote is not found.");
         }
 
-        blogVote = new BlogVote(
+        User user = userRepository.findById((long) userId)
+                .orElseThrow(() -> new GlobalException("User not found - id: " + userId));
+        Blog blog = blogRepository.findByBlogId((long) blogId)
+                .orElseThrow(() -> new GlobalException("Blog not found - id: " + blogId));
+
+        BlogVote blogVote = new BlogVote(
                 blogVoteID,
-                blogVoteRequest.vote
+                user,
+                blog,
+                blogVoteRequest.getVote()
         );
         blogVoteRepository.save(blogVote);
 
@@ -105,20 +107,18 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public BlogVoteResponse updateBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest) {
-        BlogVoteID blogVoteID = new BlogVoteID(new User(userId), new Blog(blogId));
+        BlogVoteID blogVoteID = new BlogVoteID((long) userId, (long) blogId);
 
-        BlogVote blogVote = blogVoteRepository.findById(blogVoteID);
-        if(blogVote == null) {
-            throw new GlobalException("Vote not found - blog id: " + blogId + ", user id: " + userId);
-        }
-        else if(blogVote.getType() == blogVoteRequest.vote) {
+        BlogVote blogVote = blogVoteRepository.findById(blogVoteID)
+                .orElseThrow(() -> new GlobalException("Vote not found - blog id: " + blogId + ", user id: " + userId));
+
+        if (blogVote.getType() == blogVoteRequest.getVote()) {
             throw new GlobalException("Vote already exists - blog id: " + blogId + ", user id: " + userId);
         }
 
-        blogVote.setType(blogVoteRequest.vote);
+        blogVote.setType(blogVoteRequest.getVote());
         blogVoteRepository.save(blogVote);
 
-        blogService.updateBlogVoteCount(blogVote);
         blogService.updateBlogVoteCount(blogVote);
         return toResponse(blogVote);
     }
@@ -128,22 +128,21 @@ public class VoteServiceImpl implements VoteService {
         blogVoteRepository.deleteById(vote);
     }
 
-
-
     // -------- Comment Vote Section --------
 
     private void sendNotification(CommentVote commentVote){
+        Comment comment = commentRepository.findCommentById(commentVote.getId().getCommentId())
+                .orElseThrow(() -> new GlobalException("Comment not found"));
 
-        Comment comment = commentRepository.findById(commentVote.getId().getComment().getId());
-
-        User actor = userRepository.findById((long) commentVote.getId().getUser().getId()).get();
-        User receiver = userRepository.findById((long) comment.getUser().getId()).get();
+        User actor = userRepository.findById(commentVote.getId().getUserId())
+                .orElseThrow(() -> new GlobalException("User not found"));
+        User receiver = comment.getUser();
         Notification notification = new Notification(
                 null,
                 receiver,
                 actor,
                 NotificationType.COMMENT_VOTED,
-                (long) receiver.getId(),
+                comment.getId(),
                 TargetType.COMMENT,
                 actor.getUsername() + " voted on your comment: " + comment.getContent(),
                 LocalDateTime.now(),
@@ -152,7 +151,6 @@ public class VoteServiceImpl implements VoteService {
 
         notificationService.addNotification(notification);
     }
-
 
     protected CommentVoteResponse toCommentResponse(CommentVote commentVote) {
         return new CommentVoteResponse(commentVote);
@@ -164,7 +162,6 @@ public class VoteServiceImpl implements VoteService {
         return commentVoteResponses;
     }
 
-
     @Override
     public List<CommentVoteResponse> findAllCommentVotesByCommentId(Long commentId) {
         List<CommentVote> commentVotes = commentVoteRepository.findAllByCommentId(commentId);
@@ -173,26 +170,31 @@ public class VoteServiceImpl implements VoteService {
 
     @Override
     public CommentVoteResponse findSingleCommentVoteStatus(Long userId, Long commentId) {
-        CommentVote commentVote = commentVoteRepository.findById(new CommentVoteID(userId, commentId));
-        if (commentVote == null) {
-            throw new GlobalException("Comment vote not found");
-        }
+        CommentVote commentVote = commentVoteRepository.findById(new CommentVoteID(userId, commentId))
+                .orElseThrow(() -> new GlobalException("Comment vote not found"));
         return toCommentResponse(commentVote);
     }
+
     @Override
     @Transactional
     public CommentVoteResponse addCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
-        User user = userRepository.findById((long) userId).get();
-        CommentVoteID commentVoteID = new CommentVoteID(user, new Comment(commentId));
+        CommentVoteID commentVoteID = new CommentVoteID((long) userId, (long) commentId);
 
-        CommentVote commentVote = commentVoteRepository.findById(commentVoteID);
-        if(commentVote != null) {
+        if (commentVoteRepository.findById(commentVoteID).isPresent()) {
             throw new GlobalException("Vote already exists - commentId: " + commentId + ", user id: " + userId);
         }
 
-        commentVote = new CommentVote();
-        commentVote.setId(commentVoteID);
-        commentVote.setType(commentVoteRequest.vote);
+        User user = userRepository.findById((long) userId)
+                .orElseThrow(() -> new GlobalException("User not found - id: " + userId));
+        Comment comment = commentRepository.findCommentById((long) commentId)
+                .orElseThrow(() -> new GlobalException("Comment not found - id: " + commentId));
+
+        CommentVote commentVote = new CommentVote(
+                commentVoteID,
+                user,
+                comment,
+                commentVoteRequest.getVote()
+        );
         commentVoteRepository.save(commentVote);
 
         commentService.updateCommentVoteCount(commentVote);
@@ -203,21 +205,18 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public CommentVoteResponse updateCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
-        User user = userRepository.findById((long) userId).get();
-        CommentVoteID commentVoteID = new CommentVoteID(user, new Comment(commentId));
+        CommentVoteID commentVoteID = new CommentVoteID((long) userId, (long) commentId);
 
-        CommentVote commentVote = commentVoteRepository.findById(commentVoteID);
-        if(commentVote == null) {
-            throw new GlobalException("Vote not found - commentId: " + commentId + ", user id: " + userId);
-        }
-        else if(commentVote.getType() == commentVoteRequest.vote) {
+        CommentVote commentVote = commentVoteRepository.findById(commentVoteID)
+                .orElseThrow(() -> new GlobalException("Vote not found - commentId: " + commentId + ", user id: " + userId));
+
+        if (commentVote.getType() == commentVoteRequest.getVote()) {
             throw new GlobalException("Vote already exists - commentId: " + commentId + ", user id: " + userId);
         }
 
-        commentVote.setType(commentVoteRequest.vote);
+        commentVote.setType(commentVoteRequest.getVote());
         commentVoteRepository.save(commentVote);
 
-        commentService.updateCommentVoteCount(commentVote);
         commentService.updateCommentVoteCount(commentVote);
         return toCommentResponse(commentVote);
     }

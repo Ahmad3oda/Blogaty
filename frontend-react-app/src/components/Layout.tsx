@@ -19,8 +19,8 @@ interface Suggestion {
 
 function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
-  const username = sessionStorage.getItem("username");
-  const userId = sessionStorage.getItem("userId");
+  const username = localStorage.getItem("username") || sessionStorage.getItem("username") || "User";
+  const userId = localStorage.getItem("userId") || sessionStorage.getItem("userId");
 
   const [followers, setFollowers] = useState<number>(0);
   const [following, setFollowing] = useState<number>(0);
@@ -171,7 +171,7 @@ function Layout({ children }: LayoutProps) {
               <li>
                 <button
                   className="dropdown-item"
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate(userId ? `/profile/${userId}` : "/profile")}
                 >
                   Profile
                 </button>

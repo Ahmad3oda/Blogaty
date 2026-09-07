@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/search")
@@ -20,17 +19,17 @@ public class SearchController {
     }
 
     @GetMapping("/users")
-    public List<UserResponse> getUsers(@RequestBody Map<String, String> searchParam,
+    public List<UserResponse> getUsers(@RequestParam(value = "search", defaultValue = "") String search,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "10") int size) {
-        return searchService.getSearchUserResults(searchParam.get("search"), page, size);
+        return searchService.getSearchUserResults(search, page, size);
     }
 
     @GetMapping("/blogs")
-    public List<BlogResponse> getBlogs(@RequestBody Map<String, String> searchParam,
+    public List<BlogResponse> getBlogs(@RequestParam(value = "search", defaultValue = "") String search,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "10") int size) {
-        return searchService.getSearchBlogResults(searchParam.get("search"), page, size);
+        return searchService.getSearchBlogResults(search, page, size);
     }
 
 }

@@ -1,6 +1,4 @@
 package com.blog.demo.service;
-
-import com.blog.demo.cache.RedisConfig;
 import com.blog.demo.dto.BlogRequest;
 import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.entity.BlogVote;
@@ -9,8 +7,6 @@ import com.blog.demo.entity.Vote;
 import com.blog.demo.repository.BlogRepository;
 import com.blog.demo.entity.Blog;
 import com.blog.demo.exception.GlobalException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +25,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BlogServiceImpl implements BlogService {
 
-    private final ObjectMapper objectMapper;
     private final BlogRepository blogRepository;
 
     protected BlogResponse toResponse(Blog blog) {
@@ -50,7 +45,7 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public List<BlogResponse> findAllByUserId(int userId) {
-        List <Blog> blogs = blogRepository.findAllByUserId(userId);
+        List <Blog> blogs = blogRepository.findAllByUser_Id((long) userId);
         return toResponse(blogs);
     }
 
@@ -61,20 +56,15 @@ public class BlogServiceImpl implements BlogService {
     @Override
     @Cacheable(value = "blogs", key = "#blogId")
     public BlogResponse findByBlogId(int blogId) {
-        Blog blog = blogRepository.findByBlogId(blogId);
-        if (blog == null) {
-            throw new GlobalException("Blog not found - id: " + blogId);
-        }
+        Blog blog = blogRepository.findByBlogId((long) blogId)
+                .orElseThrow(() -> new GlobalException("Blog not found - id: " + blogId));
         return toResponse(blog);
     }
 
     // returns blog class !blog response
     protected Blog __findByBlogId(int blogId) {
-        Blog blog = blogRepository.findByBlogId(blogId);
-        if (blog == null) {
-            throw new GlobalException("Blog not found - id: " + blogId);
-        }
-        return blog;
+        return blogRepository.findByBlogId((long) blogId)
+                .orElseThrow(() -> new GlobalException("Blog not found - id: " + blogId));
     }
 
     @Override
@@ -82,7 +72,7 @@ public class BlogServiceImpl implements BlogService {
     @CachePut(value = "blogs", key = "#result.blogId")
     public BlogResponse save(int userId, @NonNull BlogRequest blogRequest) {
         Blog blog = new Blog(
-                new User(userId),
+                new User((long) userId),
                 blogRequest.getContent(),
                 LocalDateTime.now(),
                 0, 0
@@ -96,42 +86,38 @@ public class BlogServiceImpl implements BlogService {
     public BlogResponse update(@NonNull Map<String, Object> payload){
         Blog dbBlog = __findByBlogId((int) payload.get("blogId"));
 
-        BlogRequest blogRequest = objectMapper.convertValue(payload, BlogRequest.class);
-
-        ObjectNode payloadNd = objectMapper.convertValue(blogRequest, ObjectNode.class);
-        ObjectNode blog = objectMapper.convertValue(dbBlog, ObjectNode.class);
-
-        blog.setAll(payloadNd);
-        dbBlog = objectMapper.convertValue(blog, Blog.class);
+        // Direct field updates to avoid ObjectMapper losing the JPA proxy
+        if (payload.containsKey("content")) {
+            dbBlog.setContent(String.valueOf(payload.get("content")));
+        }
+        dbBlog.setDate(LocalDateTime.now());
         return toResponse(blogRepository.save(dbBlog));
     }
 
+    @Transactional
     @CachePut(value = "blogs", key = "#result.blogId")
     public BlogResponse incComment(int blogId) {
-        Blog blog = blogRepository.findByBlogId(blogId);
-        if (blog == null) {
-            throw new GlobalException("Blog Not Found - id: " + blogId);
-        }
-        int comments = blog.getComments() + 1;
-        blog.setComments(comments);
-
+        Blog blog = blogRepository.findByBlogId((long) blogId)
+                .orElseThrow(() -> new GlobalException("Blog Not Found - id: " + blogId));
+        blog.setComments(blog.getComments() + 1);
         return toResponse(blogRepository.save(blog));
     }
 
+    @Transactional
     @CachePut(value = "blogs", key = "#result.blogId")
     public BlogResponse decComment(int blogId) {
-        Blog blog = blogRepository.findByBlogId(blogId);
-        if (blog == null) {
-            throw new GlobalException("Blog Not Found - id: " + blogId);
-        }
+        Blog blog = blogRepository.findByBlogId((long) blogId)
+                .orElseThrow(() -> new GlobalException("Blog Not Found - id: " + blogId));
         int comments = blog.getComments() - 1;
         blog.setComments(comments);
         return toResponse(blogRepository.save(blog));
     }
 
+    @Transactional
     @CachePut(value = "blogs", key = "#result.blogId")
     public BlogResponse updateBlogVoteCount (BlogVote blogVote) {
-        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlog().getBlogId());
+        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlogId())
+                .orElseThrow(() -> new GlobalException("Blog Not Found"));
         if(blogVote.getType() == Vote.up)
             blog.setVotes(blog.getVotes() + 1);
         else
@@ -144,6 +130,6 @@ public class BlogServiceImpl implements BlogService {
     @Transactional
     @CacheEvict(value = "blogs", key = "#blogId")
     public void deleteById(int blogId) {
-        blogRepository.deleteByBlogId(blogId);
+        blogRepository.deleteByBlogId((long) blogId);
     }
 }

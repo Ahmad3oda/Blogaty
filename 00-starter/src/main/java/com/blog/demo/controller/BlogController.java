@@ -40,7 +40,7 @@ public class BlogController {
         return blogService.findByBlogId(blogId);
     }
 
-    @PostMapping("user/{userId}")
+    @PostMapping("/user/{userId}")
     public BlogResponse createBlog(@PathVariable int userId, @RequestBody BlogRequest blog) {
         return blogService.save(userId, blog);
     }

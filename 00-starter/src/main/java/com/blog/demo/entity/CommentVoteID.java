@@ -12,16 +12,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentVoteID implements Serializable {
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "comment_id", nullable = false)
-    private Comment comment;
-
-    public CommentVoteID(Long userId, Long commentId) {
-        this.user = new User(Math.toIntExact(userId));
-        this.comment = new Comment(Math.toIntExact(commentId));
-    }
+    @Column(name = "comment_id", nullable = false)
+    private Long commentId;
 }

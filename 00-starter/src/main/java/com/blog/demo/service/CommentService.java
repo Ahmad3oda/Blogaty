@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
-@Service
 public interface CommentService {
     CommentResponse getByCommentId(int commentId);
     List<CommentResponse> getCommentsByBlogId(int blogId);

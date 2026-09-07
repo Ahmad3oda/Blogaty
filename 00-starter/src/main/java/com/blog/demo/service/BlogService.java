@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 import java.util.Map;
 
-@Service
 public interface BlogService {
     List<BlogResponse> findAll(int page, int size);
     List<BlogResponse> findAllByUserId(int userId);

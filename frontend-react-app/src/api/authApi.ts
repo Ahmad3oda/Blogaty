@@ -14,7 +14,9 @@ export interface RegisterRequest {
 export const login = async (data: LoginRequest) => {
   const res = await apiClient.post("/users/login", data);
   localStorage.setItem("token", res.data.token);
-  sessionStorage.setItem("userId", res.data.userId);
+  localStorage.setItem("userId", String(res.data.userId));
+  localStorage.setItem("username", data.username);
+  sessionStorage.setItem("userId", String(res.data.userId));
   sessionStorage.setItem("username", data.username);
   return res.data;
 };

@@ -1,6 +1,5 @@
 package com.blog.demo.entity;
 
-import com.blog.demo.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -15,7 +14,7 @@ public class Blog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "blog_id")
-    private int blogId;
+    private Long blogId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
@@ -24,8 +23,13 @@ public class Blog {
     @Column(length = 200)
     private String content;
 
+    @Column(name = "date")
     private LocalDateTime date;
+
+    @Column(name = "votes")
     private int votes;
+
+    @Column(name = "comments")
     private int comments;
 
     public Blog(User user, String content, LocalDateTime now, int i, int i1) {
@@ -36,7 +40,7 @@ public class Blog {
         this.comments = i1;
     }
 
-    public Blog(int blogId){
+    public Blog(Long blogId){
         this.blogId = blogId;
     }
 }

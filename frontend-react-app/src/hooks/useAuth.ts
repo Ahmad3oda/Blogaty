@@ -33,6 +33,10 @@ export function useAuth() {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
+    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("username");
   };
 
   return { handleLogin, handleRegister, logout, loading };

@@ -9,14 +9,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BlogRepository extends JpaRepository<Blog, Long> {
     @Query("SELECT b FROM Blog b ORDER BY b.votes DESC")
     List<Blog> findAllBlogs(Pageable pageable);
-    List<Blog> findAllByUserId(int userId);
-    Blog findByBlogId(int blogId);
-    void deleteByBlogId(int id);
+    List<Blog> findAllByUser_Id(Long userId);
+    Optional<Blog> findByBlogId(Long blogId);
+    void deleteByBlogId(Long id);
 
     @Query("SELECT b FROM Blog b WHERE b.content LIKE CONCAT('%', :content, '%')")
     List<Blog> findByContent(String content, PageRequest of);

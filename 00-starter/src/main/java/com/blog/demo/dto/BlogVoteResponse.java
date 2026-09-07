@@ -15,7 +15,7 @@ public class BlogVoteResponse {
     public Vote vote;
 
     public BlogVoteResponse (BlogVote blogVote){
-        this.user = new UserResponse(blogVote.getId().getUser());
+        this.user = new UserResponse(blogVote.getUser());
         this.vote = blogVote.getType();
     }
 }

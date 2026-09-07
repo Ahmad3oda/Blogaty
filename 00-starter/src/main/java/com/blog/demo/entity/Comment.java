@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "comments")
@@ -18,7 +17,7 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private int id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
@@ -40,7 +39,8 @@ public class Comment {
         this.votes = i;
     }
 
-    public Comment(int commentId) {
+    public Comment(Long commentId) {
         this.id = commentId;
     }
 }
+
