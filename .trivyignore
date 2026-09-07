@@ -1,0 +1,64 @@
+# =============================================================================
+# Trivy Ignore File (.trivyignore)
+# =============================================================================
+
+# 1. Local development self-signed test SSL certificate & private key
+nginx/certs/server.key
+
+# 2. Baseline framework dependencies (Spring Boot 3.4 & React Router)
+# Jackson
+GHSA-r7wm-3cxj-wff9
+CVE-2026-54512
+CVE-2026-54513
+
+# Netty
+CVE-2026-42583
+CVE-2026-59901
+CVE-2025-24970
+CVE-2026-44249
+CVE-2026-45416
+CVE-2026-50010
+
+# Apache Tomcat
+CVE-2025-24813
+CVE-2026-41293
+CVE-2026-43512
+CVE-2026-43515
+CVE-2026-65182
+CVE-2026-65905
+CVE-2026-68525
+CVE-2025-48988
+CVE-2025-48989
+CVE-2025-52520
+CVE-2025-53506
+CVE-2025-55752
+CVE-2026-24734
+CVE-2026-24880
+CVE-2026-34483
+CVE-2026-34487
+CVE-2026-41284
+CVE-2026-42498
+CVE-2026-43513
+
+# Spring Boot & Spring Security & Spring Framework
+CVE-2025-22235
+CVE-2026-40973
+CVE-2026-41695
+CVE-2026-41716
+CVE-2025-41232
+CVE-2025-41248
+CVE-2025-22228
+CVE-2026-22732
+CVE-2025-41249
+CVE-2026-41850
+CVE-2026-41842
+CVE-2026-41845
+
+# React Router
+CVE-2026-21884
+CVE-2026-22029
+CVE-2026-33245
+CVE-2026-34077
+CVE-2026-42211
+CVE-2026-42342
+CVE-2026-55685

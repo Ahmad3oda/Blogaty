@@ -1,0 +1,9 @@
+# Local SSL/TLS test certificates
+nginx/certs/server.key
+nginx/certs/server.crt
+
+# Build artifacts
+00-starter/target/
+frontend-react-app/dist/
+frontend-react-app/node_modules/
+.m2/

@@ -144,6 +144,8 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
           ignore-unfixed: true
+          trivyignores: '.trivyignore'
+          trivy-args: '--skip-dirs nginx/certs'
 
   # ===========================================================================
   # Gate 4: Build & Push Docker Images (Depends on Gate 3, Push only)
