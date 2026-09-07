@@ -65,17 +65,24 @@ The repository includes an automated GitHub Actions CI/CD pipeline (`.github/wor
 [ Push to Git ]
        │
        ▼
-Gate 1: Lint & Code Quality   (Java compilation + Frontend TypeScript typecheck)
+Gate 1: Lint & Static Analysis (Backend Checkstyle + Frontend TypeScript typecheck)
        │ (Pass)
        ▼
 Gate 2: Automated Testing     (Backend JUnit 5 & Mockito + Frontend tests)
        │ (Pass)
        ▼
-Gate 3: Security Scanning     (Aqua Security Trivy Vulnerability & Secret Scan)
+Gate 3: Security Scanning     (Trivy Vulnerability & Secret Scan — exit-code: 1 blocking gate)
        │ (Pass)
        ▼
-Gate 4: Build & Push          (Multi-stage Docker build & push to Docker Hub)
+Gate 4: Build & Push          (Multi-stage Docker build & push to Docker Hub on main branch)
 ```
+
+| Quality Gate | Job | Tools & Checks | Policy |
+| :--- | :--- | :--- | :--- |
+| **Gate 1** | `lint` | Maven Checkstyle (`checkstyle.xml`) & Frontend `tsc --noEmit` | Fails on code style/type errors |
+| **Gate 2** | `test` | Spring Boot JUnit 5 / Mockito & Frontend tests | Must pass with 0 failures |
+| **Gate 3** | `scan` | Aqua Security Trivy (SAST, Dependencies & Secrets) | Blocks on CRITICAL/HIGH CVEs |
+| **Gate 4** | `build-and-push` | Docker Buildx with GitHub Actions layer cache | Only runs on verified `main` commits |
 
 ### Required GitHub Secrets
 Configure the following secrets in **Repository Settings &rarr; Secrets and variables &rarr; Actions**:
@@ -194,24 +201,87 @@ Spring Cache with Redis integration reduces database load:
 
 ---
 
+---
+
+## 🧪 Testing & Code Quality Locally
+
+You can run each quality gate locally exactly as it executes in CI:
+
+```bash
+# 1. Backend Static Analysis (Checkstyle)
+mvn -f 00-starter/pom.xml checkstyle:check
+
+# 2. Backend Automated Tests (JUnit 5 & Mockito)
+mvn -f 00-starter/pom.xml test
+
+# 3. Frontend Type-Check & Lint
+npm --prefix frontend-react-app run lint
+
+# 4. Frontend Production Build
+npm --prefix frontend-react-app run build
+```
+
+---
+
+## 📁 Repository Structure
+
+```
+Blogaty/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml             # 4-Stage GitHub Actions CI/CD Pipeline
+├── 00-starter/                   # Spring Boot 3.4 RESTful API
+│   ├── src/
+│   │   ├── main/java/com/blog/   # Controllers, Services, Entities, DTOs, Security
+│   │   ├── main/resources/       # application.yml
+│   │   ├── test/java/com/blog/   # JUnit 5 & Mockito Unit/Integration Tests
+│   │   └── test/resources/       # application-test.yml (Isolated H2 Test Profile)
+│   ├── checkstyle.xml            # Checkstyle Static Analysis Ruleset
+│   ├── Dockerfile                # Multi-stage container build (temurin-21 JRE)
+│   └── pom.xml                   # Maven configuration
+├── frontend-react-app/           # React 18 + TypeScript + Vite UI
+│   ├── src/                      # Components, Pages, API clients, Hooks
+│   ├── Dockerfile                # Frontend development & build container
+│   ├── package.json              # NPM dependencies & scripts (lint, test, build)
+│   └── vite.config.ts
+├── nginx/                        # Nginx Reverse Proxy & Load Balancer
+│   ├── nginx.conf                # Routing, SSL termination, least_conn load balancing
+│   └── generate-ssl.sh           # Local self-signed SSL certificate generator
+├── docker-compose.yml            # Multi-service stack (MySQL, Redis, Backend, Frontend, Nginx)
+├── blog-sql-builder.sql          # Initial database schema & seed data
+├── .trivyignore                  # DevSecOps baseline security configuration
+├── .gitignore                    # Ignored build artifacts and local dev certs
+└── README.md
+```
+
+---
+
 ## 🛠️ Tech Stack
+
+### Gateway & DevOps
+- **Nginx 1.27 (Alpine)** — Reverse proxy, SSL/TLS termination, `least_conn` load balancing, HTTP-to-HTTPS redirect
+- **Docker & Docker Compose** — Containerized multi-service orchestration
+- **GitHub Actions** — 4-stage sequential CI/CD quality gates (Lint &rarr; Test &rarr; Scan &rarr; Build)
+- **Trivy (Aqua Security)** — Static Application Security Testing (SAST) & vulnerability scanner
+- **Checkstyle** — Java static code analysis & style enforcement
 
 ### Backend
 - **Java 21**
-- **Spring Boot 3.4.1**
+- **Spring Boot 3.4.13**
 - **Spring Data JPA & Hibernate 6**
 - **Spring Security 6 (Stateless JWT)**
 - **MySQL 8.0**
 - **Redis 7** (Caching & Message Pub/Sub)
 - **SpringDoc OpenAPI (Swagger UI)**
+- **JUnit 5 & Mockito** (Automated testing with H2 in-memory DB)
 - **Lombok**
 
 ### Frontend
 - **React 18**
 - **TypeScript**
 - **Vite 4**
-- **React Router v7**
-- **Bootstrap 5**
+- **React Router v7 (7.18.x)**
+- **Bootstrap 5 & MDBReact**
 - **Axios**
 
 ---
