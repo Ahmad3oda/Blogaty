@@ -57,6 +57,33 @@ Frontend web application will be accessible at: **[http://localhost:5173](http:/
 
 ---
 
+## 🔄 CI/CD Pipeline (GitHub Actions)
+
+The repository includes an automated GitHub Actions CI/CD pipeline (`.github/workflows/ci-cd.yml`) triggered on every push, enforcing 4 sequential quality gates:
+
+```
+[ Push to Git ]
+       │
+       ▼
+Gate 1: Lint & Code Quality   (Java compilation + Frontend TypeScript typecheck)
+       │ (Pass)
+       ▼
+Gate 2: Automated Testing     (Backend JUnit 5 & Mockito + Frontend tests)
+       │ (Pass)
+       ▼
+Gate 3: Security Scanning     (Aqua Security Trivy Vulnerability & Secret Scan)
+       │ (Pass)
+       ▼
+Gate 4: Build & Push          (Multi-stage Docker build & push to Docker Hub)
+```
+
+### Required GitHub Secrets
+Configure the following secrets in **Repository Settings &rarr; Secrets and variables &rarr; Actions**:
+- `DOCKERHUB_USERNAME`: Your Docker Hub username or organization.
+- `DOCKERHUB_TOKEN`: Your Docker Hub Personal Access Token (PAT).
+
+---
+
 ## 🧱 Project Architecture
 
 The backend follows a **Layered Onion Architecture** with clear separation of concerns:
