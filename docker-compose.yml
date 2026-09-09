@@ -3,17 +3,17 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: blog_directory
-      MYSQL_USER: ouda
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ${DB_DATABASE:-blog_directory}
+      MYSQL_USER: ${DB_USERNAME:-ouda}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./blog-sql-builder.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "ouda", "-ppassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME:-ouda}", "-p${DB_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -23,7 +23,7 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -43,14 +43,14 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DB_URL: jdbc:mysql://mysql:3306/blog_directory
-      DB_USERNAME: ouda
-      DB_PASSWORD: password
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: bVYp7uF83m6Zs8jF4kLd9xP0rTn2qWe5yHcXzBvN8mRq3sGfD1aJkLpOeRtYwUi
+      DB_URL: jdbc:mysql://mysql:3306/${DB_DATABASE:-blog_directory}
+      DB_USERNAME: ${DB_USERNAME:-ouda}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:8080"
 
   frontend:
     build:

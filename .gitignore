@@ -9,3 +9,7 @@ frontend-react-app/dist/
 frontend-react-app/node_modules/
 .m2/
 
+# Environment files & secrets
+.env
+.env.local
+.env.*.local
