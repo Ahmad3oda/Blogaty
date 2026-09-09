@@ -12,8 +12,13 @@ function LoginPage() {
     try {
       await handleLogin(username, password);
       window.location.href = "/blogs";
-    } catch (err) {
-      alert("Login failed");
+    } catch (err: any) {
+      const serverMsg = err?.response?.data?.message || err?.response?.data;
+      if (typeof serverMsg === "string" && serverMsg.trim()) {
+        alert("Login failed: " + serverMsg);
+      } else {
+        alert("Login failed — invalid username or password.");
+      }
     }
   };
 

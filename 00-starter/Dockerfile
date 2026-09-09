@@ -2,13 +2,13 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /build
 
-# Cache dependencies layer
+# Cache dependencies layer using BuildKit cache mount for lightning-fast rebuilds
 COPY pom.xml .
-RUN mvn dependency:go-offline -B || true
+RUN --mount=type=cache,target=/root/.m2 mvn dependency:resolve -DincludeScope=runtime -B || true
 
-# Copy source code and build package
+# Copy source code and build package with BuildKit cache mount
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests
 
 # Stage 2: Lightweight production runtime image
 FROM eclipse-temurin:21-jre-jammy

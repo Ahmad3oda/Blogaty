@@ -14,8 +14,13 @@ function RegisterPage() {
       await register({ username, password });
       alert("Registration successful! You can now log in.");
       window.location.href = "/login";
-    } catch (err) {
-      alert("Registration failed — username might already exist.");
+    } catch (err: any) {
+      const serverMsg = err?.response?.data?.message || err?.response?.data;
+      if (typeof serverMsg === "string" && serverMsg.trim()) {
+        alert("Registration failed: " + serverMsg);
+      } else {
+        alert("Registration failed — username might already exist or server is unreachable.");
+      }
     } finally {
       setLoading(false);
     }

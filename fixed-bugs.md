@@ -28,6 +28,7 @@
 | **Full JDK Base Image Used for Runtime** | Image was bloated (~800MB) using `eclipse-temurin:21-jdk` just to run an already compiled JAR. | Switched base image to lightweight JRE: `eclipse-temurin:21-jre` (~200MB). |
 | **Broken `ARG` Usage in `COPY`** | `ARG JAR_FILE=target/*.jar` was defined, but `COPY` used a literal path instead of the variable `${JAR_FILE}`. | Updated to `COPY ${JAR_FILE} app.jar`. |
 | **Missing Default Environment Variables** | Containers launched without explicit `-e` flags crashed on startup trying to connect to non-existent default hosts. | Added container-level `ENV` defaults for `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_HOST`, and `JWT_SECRET`. |
+| **Slow Docker Maven Rebuilds (140+ sec downloads)** | Rebuilding the backend container when dependencies changed took 140+ seconds due to `mvn dependency:go-offline` re-fetching plugins and dependencies without persistent caching. | Integrated Docker BuildKit cache mounts (`--mount=type=cache,target=/root/.m2`) on dependency resolution and packaging stages, persisting `~/.m2` across builds for near-instant rebuilds. |
 
 ---
 
@@ -81,6 +82,7 @@
 | **Stateful Session Default** | Spring Security was creating HTTP sessions for requests instead of enforcing stateless JWT behavior. | Added `http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))`. |
 | **Hardcoded Secret Key in `JwtUtil`** | Secret key was a hardcoded static string in source code and could not be rotated via configuration or environment variables. | Injected dynamically via `@Value("${jwt.secret}")` and made validation methods `public`. |
 | **`userRepository` Public Field in `ApplicationConfig`** | Field had `public` visibility, breaking encapsulation. | Changed to `private final`. |
+| **CORS Origin Rejection on HTTPS/Nginx (`Invalid CORS request`)** | `SecurityConfig` only allowed `http://localhost:5173`. Accessing the site via Nginx (`https://localhost`) caused Spring Security to block all POST requests with `403 Invalid CORS request`, preventing registration/login and leaving DB empty. | Updated `SecurityConfig.corsConfigurationSource()` to use `allowedOriginPatterns` for `https://localhost*`, `http://localhost*`, and `127.0.0.1*`. |
 
 ---
 
@@ -103,6 +105,7 @@
 | **Missing Routes for Bookmarks & Settings** | The sidebar and top navbar had buttons navigating to `/bookmarks` and `/settings`. Because these routes did not exist in `App.tsx`, React Router hit the wildcard `<Route path="*" element={<Navigate to="/login" />} />` and immediately kicked the user back to the login screen. | Built [src/api/bookmarkApi.ts](file:///home/ahmedz/projects/Blogaty/frontend-react-app/src/api/bookmarkApi.ts), [src/pages/BookmarksPage.tsx](file:///home/ahmedz/projects/Blogaty/frontend-react-app/src/pages/BookmarksPage.tsx), [src/pages/SettingsPage.tsx](file:///home/ahmedz/projects/Blogaty/frontend-react-app/src/pages/SettingsPage.tsx), and registered their routes in `App.tsx`. |
 | **Storage Inconsistency (`localStorage` vs `sessionStorage`)** | Auth tokens were stored in `localStorage`, but `userId` and `username` were only in `sessionStorage`. Opening new tabs or refreshing with an active token left `userId = null / 0`, breaking profile links, voting, and follow actions. | Updated `authApi.ts`, `useAuth.ts`, and `Layout.tsx` to store and read auth state across both `localStorage` and `sessionStorage`. |
 | **Missing Frontend Dockerfile** | `frontend-react-app` had no Dockerfile in the project to support clean local rebuilds. | Created [frontend-react-app/Dockerfile](file:///home/ahmedz/projects/Blogaty/frontend-react-app/Dockerfile) and rebuilt `blogaty-frontend:latest`. |
+| **Misleading Error Alerts in Auth Pages** | Catch blocks in `RegisterPage.tsx` and `LoginPage.tsx` masked true network/server errors (e.g. CORS 403, 500) behind hardcoded "username might already exist" alerts. | Updated handlers to extract and surface actual backend response error messages dynamically (`err.response.data.message`). |
 
 ---
 
