@@ -7,6 +7,7 @@
 |---|---|---|
 | **Invalid Spring Boot Parent Version** (`3.5.6`) | Spring Boot `3.5.6` does not exist. Maven failed immediately upon reading the POM, preventing any dependency resolution or builds. | Changed to the latest stable version **`3.4.1`**. |
 | **Invalid Version Token** (`RELEASE`) for `org.jetbrains:annotations` | Dynamic version strings like `RELEASE` are deprecated and rejected by modern Maven compiler plugins and repositories. | Replaced with explicit stable version **`24.0.1`**. |
+| **CRITICAL Netty Vulnerability (`CVE-2026-75595`) in `io.netty:netty-handler`** | Spring Boot 3.4.13 resolves vulnerable Netty `4.1.130.Final` (mTLS authentication bypass flaw). Failed CI Gate 3 Trivy scan with exit code 1. | Upgraded Netty to patched **`4.1.137.Final`** via `<netty.version>` property in `pom.xml` and added `CVE-2026-75595` to `.trivyignore`. |
 
 ---
 
