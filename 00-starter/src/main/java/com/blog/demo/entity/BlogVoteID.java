@@ -12,16 +12,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BlogVoteID implements Serializable {
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "blog_id", nullable = false)
-    private Blog blog;
-
-    public BlogVoteID(Long userId, Long blogId) {
-        this.user = new User(Math.toIntExact(userId));
-        this.blog = new Blog(Math.toIntExact(blogId));
-    }
+    @Column(name = "blog_id", nullable = false)
+    private Long blogId;
 }

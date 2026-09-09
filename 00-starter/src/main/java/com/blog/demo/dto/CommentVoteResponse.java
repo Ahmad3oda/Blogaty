@@ -14,7 +14,7 @@ public class CommentVoteResponse {
     public Vote vote;
 
     public CommentVoteResponse(CommentVote commentVote){
-        this.user = new UserResponse(commentVote.getId().getUser());
+        this.user = new UserResponse(commentVote.getUser());
         this.vote = commentVote.getType();
     }
 }

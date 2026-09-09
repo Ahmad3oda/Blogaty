@@ -10,10 +10,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CommentVoteRepository extends JpaRepository<CommentVote, Long> {
+public interface CommentVoteRepository extends JpaRepository<CommentVote, CommentVoteID> {
 
-    @Query("SELECT s from CommentVote s where s.id.comment.id = :commentId")
+    @Query("SELECT s from CommentVote s where s.id.commentId = :commentId")
     List<CommentVote> findAllByCommentId(@Param("commentId") Long commentId);
-
-    CommentVote findById(CommentVoteID commentVoteID);
 }

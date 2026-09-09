@@ -4,7 +4,6 @@ import com.blog.demo.entity.Notification;
 import com.blog.demo.entity.NotificationType;
 import com.blog.demo.entity.TargetType;
 import com.blog.demo.entity.User;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

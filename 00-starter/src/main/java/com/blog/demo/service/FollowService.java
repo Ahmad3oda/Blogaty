@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
-@Service
 public interface FollowService {
     FollowResponse getFollowersById(int userId);
     FollowResponse getFollowingsById(int userId);

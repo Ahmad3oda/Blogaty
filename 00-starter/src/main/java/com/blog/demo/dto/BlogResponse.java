@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 public class BlogResponse {
-    private int blogId;
+    private Long blogId;
     private UserResponse user;
     private String content;
     private LocalDateTime date;

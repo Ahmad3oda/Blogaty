@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService{
     }
 
     public List<UserResponse> findByUsernamePart(String username, int page, int size) {
-        return toResponse(userRepository.findByUsername(username, PageRequest.of(page, size)));
+        return toResponse(userRepository.findByUsernameContaining(username, PageRequest.of(page, size)));
     }
 
     @Override
@@ -83,7 +83,9 @@ public class UserServiceImpl implements UserService{
         if(dbUser.getPassword().isEmpty() || dbUser.getUsername().isEmpty()){
             throw new GlobalException("Username or password is empty.");
         }
-
+        if (userRepository.findByUsername(dbUser.getUsername()).isPresent()) {
+            throw new GlobalException("Username already taken: " + dbUser.getUsername());
+        }
         dbUser.setPassword(passwordEncoder.encode(user.getPassword()));
         dbUser.setRole(Role.USER);
         dbUser = userRepository.save(dbUser);
@@ -99,7 +101,11 @@ public class UserServiceImpl implements UserService{
         User dbUser = userRepository.findByUsername(String.valueOf(payload.get("username")))
                 .orElseThrow(() -> new GlobalException("User not found - username: " + payload.get("username")));
 
-        dbUser.setPassword(passwordEncoder.encode(String.valueOf(payload.get("password"))));
+        Object passwordPayload = payload.get("password");
+        if (passwordPayload == null || String.valueOf(passwordPayload).isBlank()) {
+            throw new GlobalException("Password is empty");
+        }
+        dbUser.setPassword(passwordEncoder.encode(String.valueOf(passwordPayload)));
         return toResponse(userRepository.save(dbUser));
     }
 

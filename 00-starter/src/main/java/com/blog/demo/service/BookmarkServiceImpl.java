@@ -1,6 +1,5 @@
 package com.blog.demo.service;
 
-import com.blog.demo.cache.RedisConfig;
 import com.blog.demo.dto.BlogResponse;
 import com.blog.demo.dto.BookmarkResponse;
 import com.blog.demo.entity.Bookmark;
@@ -16,29 +15,27 @@ import java.util.List;
 @Service
 public class BookmarkServiceImpl implements BookmarkService {
 
-    RedisConfig cache;
-    BookmarkRepository bookmarkRepository;
-    BlogRepository blogRepository;
-    BlogService blogService;
-    public BookmarkServiceImpl(RedisConfig cache,
-                               BookmarkRepository bookmarkRepository,
+    private final BookmarkRepository bookmarkRepository;
+    private final BlogRepository blogRepository;
+    private final BlogService blogService;
+
+    public BookmarkServiceImpl(BookmarkRepository bookmarkRepository,
                                BlogRepository blogRepository,
                                BlogService blogService) {
-        this.cache = cache;
         this.bookmarkRepository = bookmarkRepository;
         this.blogRepository = blogRepository;
         this.blogService = blogService;
     }
 
-    private BookmarkResponse getBookmarks(List<Long> bookmarksIds) {
+    private BookmarkResponse getBookmarks(List<Integer> bookmarksIds) {
         List<BlogResponse> bookmarks = new ArrayList<>();
-        bookmarksIds.forEach(bookmarkId -> bookmarks.add(blogService.findByBlogId(Math.toIntExact(bookmarkId))));
+        bookmarksIds.forEach(bookmarkId -> bookmarks.add(blogService.findByBlogId(bookmarkId)));
         return new BookmarkResponse(bookmarks);
     }
 
     @Override
     public BookmarkResponse getBookmarksByUserId(int userId) {
-        List <Long> bookmarksIds = bookmarkRepository.findBlogIdByUserId(userId);
+        List<Integer> bookmarksIds = bookmarkRepository.findBlogIdByUserId(userId);
         return getBookmarks(bookmarksIds);
     }
 

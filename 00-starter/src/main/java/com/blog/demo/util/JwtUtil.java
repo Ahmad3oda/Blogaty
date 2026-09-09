@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class JwtUtil {
-    private final static String SECRET_KEY = "bVYp7uF83m6Zs8jF4kLd9xP0rTn2qWe5yHcXzBvN8mRq3sGfD1aJkLpOeRtYwUi";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -38,7 +39,7 @@ public class JwtUtil {
     }
 
     private Key getSignKey(){
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     public String extractUsername(String token) {
@@ -61,12 +62,12 @@ public class JwtUtil {
         }
     }
 
-    boolean isTokenValid(String token, UserDetails userDetails){
+    public boolean isTokenValid(String token, UserDetails userDetails){
         final String username = extractUsername(token);
         return isNotTokenExpired(token) && username.equals(userDetails.getUsername());
     }
 
-    boolean isNotTokenExpired(String token){
+    public boolean isNotTokenExpired(String token){
         return extractExpiration(token).after(new Date());
     }
 

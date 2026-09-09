@@ -6,33 +6,26 @@ import BlogView from "./pages/BlogView";
 import Layout from "./components/Layout";
 import Follow from "./pages/FollowPage";
 import Profile from "./pages/Profile";
+import BookmarksPage from "./pages/BookmarksPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotificationPopup from "./components/NotificationPopup";
 import NotificationPage from "./pages/NotificationPage";
 import { useEffect, useState } from "react";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" />;
+  return token ? children : <Navigate to="/login" replace />;
 }
 
 function App() {
   const [userId, setUserId] = useState<number | null>(null);
 
-  // Load userId from sessionStorage on mount
+  // Load userId from localStorage or sessionStorage on mount
   useEffect(() => {
-    console.log('🔍 Checking for user in sessionStorage...');
-    const userId = Number(sessionStorage.getItem("userId"));
+    const storedUserId = Number(localStorage.getItem("userId") || sessionStorage.getItem("userId"));
     
-    if (userId) {
-      try {
-        console.log('✅ User found:', userId);
-        console.log('📌 Setting userId to:', userId);
-        setUserId(userId);
-      } catch (error) {
-        console.error('❌ Failed to parse user:', error);
-      }
-    } else {
-      console.log('⚠️ No user in sessionStorage');
+    if (storedUserId) {
+      setUserId(storedUserId);
     }
   }, []);
 
@@ -111,9 +104,50 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/bookmarks"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <BookmarksPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <SettingsPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Root redirect */}
+        <Route
+          path="/"
+          element={
+            localStorage.getItem("token") ? (
+              <Navigate to="/blogs" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
         {/* Default redirect */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route
+          path="*"
+          element={
+            localStorage.getItem("token") ? (
+              <Navigate to="/blogs" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
       </Routes>
 
       {/* SSE popup listener — only render when logged in */}

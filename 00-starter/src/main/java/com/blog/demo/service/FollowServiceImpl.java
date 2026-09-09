@@ -1,6 +1,5 @@
 package com.blog.demo.service;
 
-import com.blog.demo.cache.RedisConfig;
 import com.blog.demo.dto.FollowResponse;
 import com.blog.demo.dto.UserResponse;
 import com.blog.demo.entity.*;
@@ -18,18 +17,15 @@ import java.util.Map;
 @Service
 public class FollowServiceImpl implements FollowService{
 
-    RedisConfig cache;
-    UserService userService;
-    UserRepository userRepository;
-    FollowerRepository followerRepository;
-    NotificationService notificationService;
+    private final UserService userService;
+    private final UserRepository userRepository;
+    private final FollowerRepository followerRepository;
+    private final NotificationService notificationService;
 
-    FollowServiceImpl (RedisConfig cache,
-                       UserService userService,
-                       UserRepository userRepository,
-                       FollowerRepository followerRepository,
-                       NotificationService notificationService){
-        this.cache = cache;
+    public FollowServiceImpl (UserService userService,
+                              UserRepository userRepository,
+                              FollowerRepository followerRepository,
+                              NotificationService notificationService){
         this.userService = userService;
         this.userRepository = userRepository;
         this.followerRepository = followerRepository;
@@ -44,15 +40,16 @@ public class FollowServiceImpl implements FollowService{
     }
 
     private void sendNotification(Follower follower){
-
-        User actor = userRepository.findById(Long.valueOf(follower.getActor().getId())).get();
-        User receiver = userRepository.findById(Long.valueOf(follower.getReceiver().getId())).get();
+        User actor = userRepository.findById(follower.getActor().getId())
+                .orElseThrow(() -> new GlobalException("Actor user not found"));
+        User receiver = userRepository.findById(follower.getReceiver().getId())
+                .orElseThrow(() -> new GlobalException("Receiver user not found"));
         Notification notification = new Notification(
                 null,
                 receiver,
                 actor,
                 NotificationType.FOLLOWED,
-                (long) receiver.getId(),
+                receiver.getId(),
                 TargetType.USER,
                 actor.getUsername() + " started following you.",
                 LocalDateTime.now(),
@@ -64,23 +61,23 @@ public class FollowServiceImpl implements FollowService{
 
     @Override
     public FollowResponse getFollowersById(int userId) {
-        return toResponse(followerRepository.findFollowingsIdByUserId(userId));
+        return toResponse(followerRepository.findFollowersIdByUserId((long) userId));
     }
 
     @Override
     public FollowResponse getFollowingsById(int userId) {
-        return toResponse(followerRepository.findFollowersIdByUserId(userId));
+        return toResponse(followerRepository.findFollowingsIdByUserId((long) userId));
     }
 
     @Override
     public void addFollower(int receiverId, int actorId) {
-        Follower follower = followerRepository.findByReceiver_IdAndActor_Id(receiverId, actorId);
+        Follower follower = followerRepository.findByReceiver_IdAndActor_Id((long) receiverId, (long) actorId);
         if(follower != null){
             throw new GlobalException("Follower relationship exists - receiver id: "
                     + receiverId + ", followers id: " + actorId);
         }
-        User actor = new User(); actor.setId(Math.toIntExact(actorId));
-        User receiver = new User(); receiver.setId(Math.toIntExact(receiverId));
+        User actor = new User((long) actorId);
+        User receiver = new User((long) receiverId);
 
         follower = new Follower(receiver, actor);
         sendNotification(follower);
@@ -91,28 +88,26 @@ public class FollowServiceImpl implements FollowService{
     @Override
     public Object getSuggestions(int userId) {
         List<UserResponse> list = userService.findAll();
-        List<Long> followers = followerRepository.findFollowersIdByUserId(userId);
+        List<Long> followers = followerRepository.findFollowingsIdByUserId((long) userId);
 
         followers.add((long) userId);
         return list.stream()
-                .filter(user -> !followers.contains((long) user.getId()))
+                .filter(user -> !followers.contains(user.getId()))
                 .toList();
     }
 
-
     @Override
     public void removeFollower(int receiverId, int actorId) {
-        User actor = new User(); actor.setId(Math.toIntExact(actorId));
-        User receiver = new User(); receiver.setId(Math.toIntExact(receiverId));
+        User actor = new User((long) actorId);
+        User receiver = new User((long) receiverId);
         followerRepository.delete(new Follower(receiver, actor));
     }
 
     @Override
     public Map<String, Integer> getNumbers(int userId) {
-
         Map<String, Integer> response = new HashMap<>();
-        response.put("followers", followerRepository.countByReceiver_Id(userId));
-        response.put("following", followerRepository.countByActor_Id(userId));
+        response.put("followers", followerRepository.countByReceiver_Id((long) userId));
+        response.put("following", followerRepository.countByActor_Id((long) userId));
         return response;
     }
 }

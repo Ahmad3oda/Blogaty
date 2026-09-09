@@ -2,15 +2,22 @@ spring:
   application:
       name: cruddemo
   datasource:
-      url: jdbc:mysql://localhost:3306/blog_directory
-      username: ouda
-      password: password
+      url: ${DB_URL:jdbc:mysql://localhost:3306/blog_directory}
+      username: ${DB_USERNAME:ouda}
+      password: ${DB_PASSWORD:password}
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   cache:
     type: redis
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
 
 logging:
   level:
@@ -19,7 +26,7 @@ logging:
     org.springframework.cache.interceptor: TRACE
     org.springframework.cache.support: TRACE
 jwt:
-  secret: bVYp7uF83m6Zs8jF4kLd9xP0rTn2qWe5yHcXzBvN8mRq3sGfD1aJkLpOeRtYwUi
+  secret: ${JWT_SECRET:bVYp7uF83m6Zs8jF4kLd9xP0rTn2qWe5yHcXzBvN8mRq3sGfD1aJkLpOeRtYwUi}
 
 #  security:
 #      user:

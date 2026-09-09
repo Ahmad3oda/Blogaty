@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 public class CommentResponse implements Serializable {
-    private int id;
+    private Long id;
     private UserResponse author;
-    private int blogId;
+    private Long blogId;
     private String content;
     private LocalDateTime date;
     private int votes;

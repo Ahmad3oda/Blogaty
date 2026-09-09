@@ -24,7 +24,7 @@ function BlogList({ showCreatePost = true, userId }: BlogListProps) {
 
   const loadBlogs = async () => {
     try {
-      const data = await getBlogs(page, 10, userId); // filter by userId if provided
+      const data = userId ? await getBlogByUser(userId) : await getBlogs(page, 10);
       const newBlogs = data.content || data;
       if (newBlogs.length === 0) {
         setHasMore(false);

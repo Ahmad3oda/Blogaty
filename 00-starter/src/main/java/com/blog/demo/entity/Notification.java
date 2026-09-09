@@ -38,5 +38,6 @@ public class Notification {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    private boolean isRead = false;
+    @Column(name = "is_read")
+    private boolean read = false;
 }
