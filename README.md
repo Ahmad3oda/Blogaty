@@ -15,10 +15,13 @@
 Start the entire stack (MySQL, Redis, Spring Boot Backend, React Frontend, and Nginx Gateway) with a single command:
 
 ```bash
-# 1. Generate local SSL certificate (if not already generated)
+# 1. Set up environment variables & secrets
+cp .env.example .env
+
+# 2. Generate local SSL certificate (if not already generated)
 chmod +x nginx/generate-ssl.sh && ./nginx/generate-ssl.sh
 
-# 2. Launch the entire stack
+# 3. Launch the entire stack
 docker compose up -d --build
 ```
 
@@ -88,6 +91,8 @@ Gate 4: Build & Push          (Multi-stage Docker build & push to Docker Hub on 
 Configure the following secrets in **Repository Settings &rarr; Secrets and variables &rarr; Actions**:
 - `DOCKERHUB_USERNAME`: Your Docker Hub username or organization.
 - `DOCKERHUB_TOKEN`: Your Docker Hub Personal Access Token (PAT).
+
+> **Note:** Application credentials (database passwords, root password, and JWT secret) are managed via your local or staging `.env` file (copied from `.env.example`) and are not required in GitHub Secrets for standard CI build runs.
 
 ---
 
@@ -247,10 +252,11 @@ Blogaty/
 ├── nginx/                        # Nginx Reverse Proxy & Load Balancer
 │   ├── nginx.conf                # Routing, SSL termination, least_conn load balancing
 │   └── generate-ssl.sh           # Local self-signed SSL certificate generator
+├── .env.example                  # Environment configuration & secrets template
 ├── docker-compose.yml            # Multi-service stack (MySQL, Redis, Backend, Frontend, Nginx)
 ├── blog-sql-builder.sql          # Initial database schema & seed data
 ├── .trivyignore                  # DevSecOps baseline security configuration
-├── .gitignore                    # Ignored build artifacts and local dev certs
+├── .gitignore                    # Ignored build artifacts, local dev certs, and .env
 └── README.md
 ```
 
@@ -286,9 +292,14 @@ Blogaty/
 
 ---
 
-## 🧑‍💻 Author
+## 🧑‍💻 Authors
 
 **Ahmad Ouda**  
-Java Backend Developer | Competitive Programmer  
+Full-Stack Developer — Backend, Frontend & Database  
 📧 [ahmadouda383@gmail.com](mailto:ahmadouda383@gmail.com)  
 🔗 [LinkedIn](https://linkedin.com/in/real-ahmad-ouda)
+
+**Ahmed Zayan**  
+DevOps Engineer — CI/CD, Docker, Security & Infrastructure  
+📧 [azayan570@gmail.com](mailto:azayan570@gmail.com)  
+🔗 [LinkedIn](https://www.linkedin.com/in/ahmed-zayan-33755919a/)
