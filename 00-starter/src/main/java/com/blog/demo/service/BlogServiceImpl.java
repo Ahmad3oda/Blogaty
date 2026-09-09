@@ -5,6 +5,7 @@ import com.blog.demo.entity.BlogVote;
 import com.blog.demo.entity.User;
 import com.blog.demo.entity.Vote;
 import com.blog.demo.repository.BlogRepository;
+import com.blog.demo.repository.BlogVoteRepository;
 import com.blog.demo.entity.Blog;
 import com.blog.demo.exception.GlobalException;
 import jakarta.transaction.Transactional;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class BlogServiceImpl implements BlogService {
 
     private final BlogRepository blogRepository;
+    private final BlogVoteRepository blogVoteRepository;
 
     protected BlogResponse toResponse(Blog blog) {
         return new BlogResponse(blog);
@@ -113,17 +115,23 @@ public class BlogServiceImpl implements BlogService {
         return toResponse(blogRepository.save(blog));
     }
 
+    @Override
+    @Transactional
+    @CachePut(value = "blogs", key = "#result.blogId")
+    public BlogResponse recalculateVotes(int blogId) {
+        Blog blog = blogRepository.findByBlogId((long) blogId)
+                .orElseThrow(() -> new GlobalException("Blog Not Found - id: " + blogId));
+        List<BlogVote> allVotes = blogVoteRepository.findAllByBlogId((long) blogId);
+        int total = allVotes.stream().mapToInt(v -> v.getType() == Vote.up ? 1 : (v.getType() == Vote.down ? -1 : 0)).sum();
+        blog.setVotes(total);
+        return toResponse(blogRepository.save(blog));
+    }
+
+    @Override
     @Transactional
     @CachePut(value = "blogs", key = "#result.blogId")
     public BlogResponse updateBlogVoteCount (BlogVote blogVote) {
-        Blog blog = blogRepository.findByBlogId(blogVote.getId().getBlogId())
-                .orElseThrow(() -> new GlobalException("Blog Not Found"));
-        if(blogVote.getType() == Vote.up)
-            blog.setVotes(blog.getVotes() + 1);
-        else
-            blog.setVotes(blog.getVotes() - 1);
-
-        return toResponse(blogRepository.save(blog));
+        return recalculateVotes(Math.toIntExact(blogVote.getId().getBlogId()));
     }
 
     @Override

@@ -109,7 +109,66 @@
 
 ---
 
+### 10. Nginx Gateway & Reverse Proxy (`nginx/nginx.conf`)
+
+| What Was Wrong | Why It Broke the System | How It Was Fixed |
+|---|---|---|
+| **Route Path Collision (`/blogs`) Between React Router & REST API** | Nginx regex `^/(blogs|...` matched all requests to `/blogs` and sent them directly to Spring Boot backend. Visiting `https://localhost/blogs` or reloading the page returned raw JSON instead of rendering the React UI. | Added `if ($http_accept ~* "text/html") { proxy_pass http://frontend_cluster; }` so browser page navigation requests load the React application, while AJAX/API requests continue to route to the backend. |
+| **Non-RFC Compliant Upstream Names (`_`) & SSE Dropping** | Upstream names `backend_cluster` and `frontend_cluster` used underscores, which Tomcat rejects with `IllegalArgumentException: The character [_] is never valid in a domain name`. Additionally, missing `proxy_set_header Host $host` in SSE location blocks forwarded upstream names directly to Tomcat, and default 60s read timeout killed SSE connections. | Renamed upstreams to RFC-compliant `backend-cluster` and `frontend-cluster`. Created a dedicated `location ~ ^/notifications/stream/` block passing `$host` and setting `proxy_read_timeout 24h` with buffering and caching disabled. |
+
+---
+
+### 11. Real-Time Notifications & SSE Protocol Security (`NotificationPopup.tsx`)
+
+| What Was Wrong | Why It Broke the System | How It Was Fixed |
+|---|---|---|
+| **Hardcoded `http://localhost:8080` in `EventSource`** | Caused browser **Mixed Content blocking** when accessing the site via HTTPS (`https://localhost`). Also failed if the backend port changed or in production environments. | Replaced with relative path `/notifications/stream/${userId}`, routing cleanly through the Nginx reverse proxy. |
+| **Premature Connection Termination on SSE Error** | In `NotificationPopup.tsx`, `eventSource.onerror` unconditionally called `eventSource.close()`, permanently destroying the browser's automatic reconnection mechanism upon any 60s timeout or transient network hiccup. | Removed unconditional `eventSource.close()` from `onerror`, preserving browser auto-reconnect while closing only on component unmount. |
+
+---
+
+### 12. Frontend Routing 404s & Inverted Follow Parameters
+
+| What Was Wrong | Why It Broke the System | How It Was Fixed |
+|---|---|---|
+| **Missing Leading Slashes in API Endpoints** (`userApi.ts`, `notificationApi.ts`, `voteApi.ts`) | Calling `apiClient.get('votes/blog/${blogId}')` from nested URLs like `/blogs/:blogId` or `/profile/:userId` caused Axios to resolve relative paths like `/blogs/votes/blog/1`, throwing 404 Not Found errors on blog upvoting, commenting, and notifications. | Prepended leading `/` to all endpoint URLs across `userApi.ts`, `notificationApi.ts`, and `voteApi.ts`. |
+| **Inverted Follow / Unfollow User ID Order** (`Layout.tsx` & `FollowPage.tsx`) | `FollowController.java` defines `@PostMapping("/{receiverId}/{actorId}")`. In `Layout.tsx`, `followUser(Number(userId), targetId)` passed `receiverId = userId` and `actorId = targetId`, recording the suggested user as following the logged-in user rather than the logged-in user following the suggestion. In `FollowPage.tsx`, `unfollowUser(userId, followingId)` similarly swapped actor and receiver. | Corrected parameter order in `Layout.tsx` (`followUser(targetId, Number(userId))`) and `FollowPage.tsx` (`unfollowUser(followingId, userId)`). Incremented `following` count on follow. |
+| **Incorrect Property Key in `FollowerCount`** (`FollowPage.tsx`) | `FollowerCount` read `res.followersCount`, but backend returns `{ "followers": N, "following": M }`. Consequently, followers count always rendered as 0. | Updated property lookup to `res.followers || 0`. |
+
+---
+
+### 13. Password Security & Serialization Leaks (`User.java`)
+
+| What Was Wrong | Why It Broke the System | How It Was Fixed |
+|---|---|---|
+| **Exposing Password Hashes in Serialized Entities** | `User.java` had no Jackson ignore or property write restrictions on `private String password;`. When entities referencing `User` (such as `Notification.receiver` and `Notification.actor` in SSE streams) were serialized, the hashed password was exposed to clients. | Added `@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)` and `@ToString.Exclude` to `password` in `User.java`. |
+
+---
+
+### 14. Vote Calculation Drift & Unvoting Support
+
+| What Was Wrong | Why It Broke the System | How It Was Fixed |
+|---|---|---|
+| **Off-by-Two Vote Calculation Drift** (`BlogServiceImpl` & `CommentServiceImpl`) | When switching a vote from `up` (+1) to `down` (-1), the service only subtracted 1 instead of 2 (setting 1 - 1 = 0 instead of -1). Switching back from `down` to `up` only added 1, permanently desynchronizing vote counts from actual records. | Implemented `recalculateVotes(id)` in `BlogService` and `CommentService`, calculating exact total score directly from repository as `(upvotes - downvotes)` and saving to DB and Redis cache. |
+| **Vote Retraction ("none") Throws 400 Bad Request** | `Vote` enum only contained `up` and `down`. When `BlogList.tsx` sent `vote: "none"` to retract a vote, Jackson threw a 400 deserialization exception and alerted "Failed to update blog vote". | Added `none` to `Vote` enum. In `VoteServiceImpl`, when `vote == Vote.none` is received, the vote row is deleted from the database and the total score is recalculated accurately. |
+| **Non-Idempotent Add Vote Handling** | Calling `addBlogVote` or `addCommentVote` when a vote already existed threw 400 / 409 errors rather than gracefully updating the vote. | Updated `addBlogVote` and `addCommentVote` to delegate to `updateBlogVote` / `updateCommentVote` if an existing record is detected. |
+| **Missing Leading Slashes in `VoteController.java`** | `@GetMapping("blog/{userId}/{blogId}")` and `@GetMapping("comment/{userId}/{commentId}")` lacked leading slashes. | Added leading slashes: `@GetMapping("/blog/{userId}/{blogId}")` and `@GetMapping("/comment/{userId}/{commentId}")`. Added `DELETE /votes/**` rule in `SecurityConfig.java`. |
+| **BlogView Unvoting Support** (`BlogView.tsx`) | Clicking an already-active vote button in `BlogView.tsx` threw an alert error instead of toggling off the vote. | Updated `handleBlogVote` and `handleCommentVote` to retract vote with `"none"` when clicking the current vote. |
+
+---
+
+### 15. Storage Desynchronization Across Pages
+
+| What Was Wrong | Why It Broke the System | How It Was Fixed |
+|---|---|---|
+| **Session Inconsistency in New Tabs / Browser Restarts** | `BlogView.tsx`, `BlogList.tsx`, `Profile.tsx`, `NotificationPage.tsx`, and `FollowPage.tsx` read `userId` solely from `sessionStorage`. When opening new tabs or after restarting the browser, `localStorage` had the token but `sessionStorage` was empty, resulting in `userId = 0` and breaking user actions. | Standardized all pages to use fallback: `Number(localStorage.getItem("userId") || sessionStorage.getItem("userId"))`. |
+| **Incomplete Logout in `Layout.tsx`** | Top navbar dropdown logout only cleared `localStorage.removeItem("token")`, leaving `userId` and `username` in storage. | Updated logout handler to call `localStorage.clear()` and `sessionStorage.clear()`. |
+
+---
+
 ### Final Verified State
 
 - **Backend**: Compiles with zero errors (`mvn clean package`), starts in ~5 seconds, connects to MySQL & Redis, and serves all REST endpoints cleanly.
-- **Frontend**: Compiles with zero TypeScript errors (`tsc && vite build`), connects seamlessly to the backend on port `8080`, and routes all buttons (Home, Bookmarks, Followers, Notifications, Profile, Settings) properly without unintended logouts.
+- **Frontend**: Compiles cleanly (`vite build`), connects seamlessly to the backend on port `8080`, and routes all buttons (Home, Bookmarks, Followers, Notifications, Profile, Settings) properly without unintended logouts.
+- **Real-Time SSE**: Verified live push notifications over HTTPS with Nginx reverse proxying and persistent 24h streaming.
+- **Voting & Followers**: Verified upvoting, downvoting, unvoting with zero math drift, along with verified follow/unfollow and suggestions workflow.

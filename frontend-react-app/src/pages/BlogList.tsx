@@ -16,7 +16,7 @@ function BlogList({ showCreatePost = true, userId }: BlogListProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const loggedInUserId = Number(sessionStorage.getItem("userId"));
+  const loggedInUserId = Number(localStorage.getItem("userId") || sessionStorage.getItem("userId"));
 
   useEffect(() => {
     loadBlogs();
@@ -36,7 +36,7 @@ function BlogList({ showCreatePost = true, userId }: BlogListProps) {
           newBlogs.map(async (b: any) => {
             try {
               const voteData = await getBlogVote(loggedInUserId, b.blogId);
-              return { ...b, userVote: voteData.vote || null };
+              return { ...b, userVote: (voteData?.vote && voteData.vote !== "none") ? voteData.vote : null };
             } catch {
               return { ...b, userVote: null };
             }
@@ -60,7 +60,7 @@ function BlogList({ showCreatePost = true, userId }: BlogListProps) {
 
     try {
       setLoading(true);
-      const username = sessionStorage.getItem("username");
+      const username = localStorage.getItem("username") || sessionStorage.getItem("username");
       const newBlog = await addBlog(loggedInUserId, content);
       const blogWithUser = {
         ...newBlog,

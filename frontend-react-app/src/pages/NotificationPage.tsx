@@ -9,16 +9,18 @@ interface Notification {
 
 function NotificationPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const userId = Number(sessionStorage.getItem("userId")); // Replace with logged-in user ID from auth context
+  const userId = Number(localStorage.getItem("userId") || sessionStorage.getItem("userId"));
 
   useEffect(() => {
-    loadNotifications();
-  }, []);
+    if (userId) {
+      loadNotifications();
+    }
+  }, [userId]);
 
   const loadNotifications = async () => {
     try {
       const data = await getNotifications(userId);
-      setNotifications(data.notifications);
+      setNotifications(data.notifications || []);
     } catch (err) {
       console.error("Error fetching notifications:", err);
     }
@@ -31,8 +33,8 @@ function NotificationPage() {
         <p className="no-notifications">No notifications yet.</p>
       ) : (
         <ul className="notification-list">
-          {notifications.map((n) => (
-            <li className="notification-item">
+          {notifications.map((n, index) => (
+            <li key={index} className="notification-item">
               <div className="notification-message">{n.message}</div>
               <div className="notification-date">
                 {new Date(n.createdAt).toLocaleString()}

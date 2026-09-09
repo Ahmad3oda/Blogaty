@@ -22,7 +22,7 @@ function NotificationPopup({ userId }: Props) {
 
     console.log('🔌 Connecting SSE for user:', userId);
 
-    const eventSource = new EventSource(`http://localhost:8080/notifications/stream/${userId}`);
+    const eventSource = new EventSource(`/notifications/stream/${userId}`);
 
     eventSource.onopen = () => {
       console.log('✅ SSE Connected for user:', userId);
@@ -43,7 +43,6 @@ function NotificationPopup({ userId }: Props) {
       } else if (eventSource.readyState === EventSource.CONNECTING) {
         console.log('Reconnecting...');
       }
-      eventSource.close();
     };
 
     return () => {

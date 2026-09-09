@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/votes/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/votes/**").hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/votes/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/votes/**").hasAnyAuthority("USER", "ADMIN")
 
                         // --- Users ---
                         .requestMatchers(HttpMethod.GET, "/users").hasAuthority("ADMIN")

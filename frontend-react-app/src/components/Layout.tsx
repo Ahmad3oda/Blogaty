@@ -65,8 +65,9 @@ function Layout({ children }: LayoutProps) {
     if (!userId) return;
     try {
       setActionLoading((prev) => [...prev, targetId]);
-      await followUser(Number(userId), targetId);
+      await followUser(targetId, Number(userId));
       setSuggestions((prev) => prev.filter((u) => u.id !== targetId));
+      setFollowing((prev) => prev + 1);
     } catch (err) {
       console.error("Follow failed:", err);
     } finally {
@@ -191,7 +192,8 @@ function Layout({ children }: LayoutProps) {
                 <button
                   className="dropdown-item text-danger"
                   onClick={() => {
-                    localStorage.removeItem("token");
+                    localStorage.clear();
+                    sessionStorage.clear();
                     window.location.href = "/login";
                   }}
                 >

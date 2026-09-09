@@ -20,7 +20,7 @@ function FollowersSwitch() {
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<number[]>([]);
 
-  const userId = Number(sessionStorage.getItem("userId")); // read userId from sessionStorage
+  const userId = Number(localStorage.getItem("userId") || sessionStorage.getItem("userId"));
 
   // Fetch followers or followings
   const fetchData = async () => {
@@ -43,7 +43,7 @@ function FollowersSwitch() {
   const handleUnfollow = async (followingId: number) => {
     try {
       setActionLoading((prev) => [...prev, followingId]);
-      await unfollowUser(userId, followingId);
+      await unfollowUser(followingId, userId);
       setFollowings((prev) => prev.filter((f) => f.id !== followingId));
     } catch (err) {
       console.error(err);
@@ -162,7 +162,7 @@ function FollowerCount({ userId }: { userId: number }) {
     const fetchCount = async () => {
       try {
         const res = await getFollowersCount(userId);
-        setCount(res.followersCount || 0);
+        setCount(res.followers || 0);
       } catch (err) {
         console.error(err);
       }

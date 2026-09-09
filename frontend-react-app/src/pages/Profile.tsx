@@ -12,7 +12,7 @@ import "../styles/Profile.css";
 
 function Profile() {
   const { userId: paramUserId } = useParams<{ userId: string }>();
-  const loggedInUserId = Number(sessionStorage.getItem("userId"));
+  const loggedInUserId = Number(localStorage.getItem("userId") || sessionStorage.getItem("userId"));
   const userId = paramUserId ? Number(paramUserId) : loggedInUserId;
 
   const [username, setUsername] = useState("");

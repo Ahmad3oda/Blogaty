@@ -19,5 +19,5 @@ public interface CommentService {
     void deleteByCommentId(int commentId);
 
     CommentResponse updateCommentVoteCount(CommentVote commentVote);
-
+    CommentResponse recalculateVotes(int commentId);
 }

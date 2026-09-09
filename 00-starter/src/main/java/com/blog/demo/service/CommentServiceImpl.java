@@ -7,6 +7,7 @@ import com.blog.demo.entity.*;
 import com.blog.demo.exception.GlobalException;
 import com.blog.demo.repository.BlogRepository;
 import com.blog.demo.repository.CommentRepository;
+import com.blog.demo.repository.CommentVoteRepository;
 import com.blog.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
@@ -28,6 +29,7 @@ import java.util.*;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
+    private final CommentVoteRepository commentVoteRepository;
     private final BlogRepository blogRepository;
     private final BlogService blogService;
     private final UserRepository userRepository;
@@ -148,15 +150,23 @@ public class CommentServiceImpl implements CommentService {
         return toResponse(commentRepository.save(dbComment));
     }
 
+    @Override
+    @Transactional
+    @CachePut(value = "comments", key = "#result.id")
+    public CommentResponse recalculateVotes(int commentId) {
+        Comment comment = commentRepository.findCommentById((long) commentId)
+                .orElseThrow(() -> new GlobalException("Comment Not Found - id: " + commentId));
+        List<CommentVote> allVotes = commentVoteRepository.findAllByCommentId((long) commentId);
+        int total = allVotes.stream().mapToInt(v -> v.getType() == Vote.up ? 1 : (v.getType() == Vote.down ? -1 : 0)).sum();
+        comment.setVotes(total);
+        return toResponse(commentRepository.save(comment));
+    }
+
+    @Override
+    @Transactional
     @CachePut(value = "comments", key = "#result.id")
     public CommentResponse updateCommentVoteCount (@NonNull CommentVote commentVote) {
-        Comment comment = commentRepository.findCommentById(commentVote.getId().getCommentId())
-                .orElseThrow(() -> new GlobalException("Comment Not Found"));
-        if(commentVote.getType() == Vote.up)
-            comment.setVotes(comment.getVotes() + 1);
-        else
-            comment.setVotes(comment.getVotes() - 1);
-        return toResponse(commentRepository.save(comment));
+        return recalculateVotes(Math.toIntExact(commentVote.getId().getCommentId()));
     }
 
     @Override

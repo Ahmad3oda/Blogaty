@@ -28,7 +28,7 @@ public class VoteController {
         return voteService.findAllBlogVotesByBlogId(blogId);
     }
 
-    @GetMapping("blog/{userId}/{blogId}")
+    @GetMapping("/blog/{userId}/{blogId}")
     public BlogVoteResponse getBlogVote(@PathVariable Long userId, @PathVariable Long blogId) {
         return voteService.findSingleVoteStatus(userId, blogId);
     }
@@ -62,7 +62,7 @@ public class VoteController {
         return voteService.findAllCommentVotesByCommentId(commentId);
     }
 
-    @GetMapping("comment/{userId}/{commentId}")
+    @GetMapping("/comment/{userId}/{commentId}")
     public CommentVoteResponse getCommentVote(@PathVariable Long userId, @PathVariable Long commentId) {
         return voteService.findSingleCommentVoteStatus(userId, commentId);
     }

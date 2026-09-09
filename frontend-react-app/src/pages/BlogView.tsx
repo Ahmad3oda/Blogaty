@@ -22,7 +22,7 @@ function BlogView() {
   const [hasMore, setHasMore] = useState(true);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const userId = Number(sessionStorage.getItem("userId"));
+  const userId = Number(localStorage.getItem("userId") || sessionStorage.getItem("userId"));
 
   // ---------- LOAD BLOG + USER VOTE ----------
   useEffect(() => {
@@ -39,7 +39,7 @@ function BlogView() {
     if (userId) {
       try {
         const userVote = await getBlogVote(userId, Number(blogId));
-        blogData.userVote = userVote?.vote || null;
+        blogData.userVote = (userVote?.vote && userVote.vote !== "none") ? userVote.vote : null;
       } catch {
         blogData.userVote = null;
       }
@@ -65,7 +65,7 @@ function BlogView() {
             if (userId) {
               try {
                 const userVote = await getCommentVote(userId, c.id);
-                userVoteVal = userVote?.vote || null;
+                userVoteVal = (userVote?.vote && userVote.vote !== "none") ? userVote.vote : null;
               } catch {
                 userVoteVal = null;
               }
@@ -92,16 +92,23 @@ function BlogView() {
 
   const handleBlogVote = async (vote: "up" | "down") => {
     if (!userId) return alert("You must be logged in to vote!");
+    const currentVote = blog?.userVote;
 
     try {
-      await updateBlogVote(userId, Number(blogId), vote);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        await addBlogVote(userId, Number(blogId), vote);
+      if (currentVote === vote) {
+        await updateBlogVote(userId, Number(blogId), "none");
       } else {
-        console.error("Blog vote error:", err);
-        return alert("Failed to vote on blog.");
+        try {
+          await addBlogVote(userId, Number(blogId), vote);
+        } catch (err: any) {
+          if ([400, 404, 409].includes(err?.response?.status)) {
+            await updateBlogVote(userId, Number(blogId), vote);
+          } else throw err;
+        }
       }
+    } catch (err) {
+      console.error("Blog vote error:", err);
+      return alert("Failed to vote on blog.");
     }
     await loadBlogWithVote();
   };
@@ -111,30 +118,31 @@ function BlogView() {
       alert("You must be logged in to vote!");
       return;
     }
+    const currentComment = comments.find((c) => c.id === commentId);
+    const currentVote = currentComment?.userVote;
 
     try {
-      await addCommentVote(userId, commentId, vote);
-    } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 409 || status === 400 || status === 404) {
-        try {
-          await updateCommentVote(userId, commentId, vote);
-        } catch (err2) {
-          console.error("updateCommentVote failed:", err2);
-          alert("Failed to vote on comment.");
-          return;
-        }
+      if (currentVote === vote) {
+        await updateCommentVote(userId, commentId, "none");
       } else {
-        console.error("Unexpected addCommentVote error:", err);
-        alert("Failed to vote on comment.");
-        return;
+        try {
+          await addCommentVote(userId, commentId, vote);
+        } catch (err: any) {
+          if ([400, 404, 409].includes(err?.response?.status)) {
+            await updateCommentVote(userId, commentId, vote);
+          } else throw err;
+        }
       }
+    } catch (err: any) {
+      console.error("Comment vote error:", err);
+      alert("Failed to vote on comment.");
+      return;
     }
 
     let userVoteVal: string | null = null;
     try {
       const voteData = await getCommentVote(userId, commentId);
-      userVoteVal = voteData?.vote || null;
+      userVoteVal = (voteData?.vote && voteData.vote !== "none") ? voteData.vote : null;
     } catch {
       userVoteVal = null;
     }

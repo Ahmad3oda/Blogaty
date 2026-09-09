@@ -4,6 +4,7 @@ import com.blog.demo.dto.BlogVoteRequest;
 import com.blog.demo.dto.BlogVoteResponse;
 import com.blog.demo.dto.CommentVoteRequest;
 import com.blog.demo.dto.CommentVoteResponse;
+import com.blog.demo.dto.UserResponse;
 import com.blog.demo.entity.*;
 import com.blog.demo.exception.GlobalException;
 import com.blog.demo.repository.*;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -79,10 +81,11 @@ public class VoteServiceImpl implements VoteService {
     public BlogVoteResponse addBlogVote(int userId, int blogId, BlogVoteRequest blogVoteRequest) {
         BlogVoteID blogVoteID = new BlogVoteID((long) userId, (long) blogId);
 
-        if (blogVoteRepository.findById(blogVoteID).isPresent()) {
-            throw new GlobalException("Vote already exists - blog id: " + blogId + ", user id: " + userId);
+        Optional<BlogVote> existing = blogVoteRepository.findById(blogVoteID);
+        if (existing.isPresent()) {
+            return updateBlogVote(userId, blogId, blogVoteRequest);
         }
-        if (blogVoteRequest.getVote() == null) {
+        if (blogVoteRequest.getVote() == null || blogVoteRequest.getVote() == Vote.none) {
             throw new GlobalException("Vote is not found.");
         }
 
@@ -99,7 +102,7 @@ public class VoteServiceImpl implements VoteService {
         );
         blogVoteRepository.save(blogVote);
 
-        blogService.updateBlogVoteCount(blogVote);
+        blogService.recalculateVotes(blogId);
         sendNotification(blogVote);
         return toResponse(blogVote);
     }
@@ -112,14 +115,16 @@ public class VoteServiceImpl implements VoteService {
         BlogVote blogVote = blogVoteRepository.findById(blogVoteID)
                 .orElseThrow(() -> new GlobalException("Vote not found - blog id: " + blogId + ", user id: " + userId));
 
-        if (blogVote.getType() == blogVoteRequest.getVote()) {
-            throw new GlobalException("Vote already exists - blog id: " + blogId + ", user id: " + userId);
+        if (blogVoteRequest.getVote() == null || blogVoteRequest.getVote() == Vote.none) {
+            blogVoteRepository.delete(blogVote);
+            blogService.recalculateVotes(blogId);
+            return new BlogVoteResponse(new UserResponse(blogVote.getUser()), Vote.none);
         }
 
         blogVote.setType(blogVoteRequest.getVote());
         blogVoteRepository.save(blogVote);
 
-        blogService.updateBlogVoteCount(blogVote);
+        blogService.recalculateVotes(blogId);
         return toResponse(blogVote);
     }
 
@@ -180,8 +185,12 @@ public class VoteServiceImpl implements VoteService {
     public CommentVoteResponse addCommentVote(int userId, int commentId, CommentVoteRequest commentVoteRequest) {
         CommentVoteID commentVoteID = new CommentVoteID((long) userId, (long) commentId);
 
-        if (commentVoteRepository.findById(commentVoteID).isPresent()) {
-            throw new GlobalException("Vote already exists - commentId: " + commentId + ", user id: " + userId);
+        Optional<CommentVote> existing = commentVoteRepository.findById(commentVoteID);
+        if (existing.isPresent()) {
+            return updateCommentVote(userId, commentId, commentVoteRequest);
+        }
+        if (commentVoteRequest.getVote() == null || commentVoteRequest.getVote() == Vote.none) {
+            throw new GlobalException("Vote is not found.");
         }
 
         User user = userRepository.findById((long) userId)
@@ -197,7 +206,7 @@ public class VoteServiceImpl implements VoteService {
         );
         commentVoteRepository.save(commentVote);
 
-        commentService.updateCommentVoteCount(commentVote);
+        commentService.recalculateVotes(commentId);
         sendNotification(commentVote);
         return toCommentResponse(commentVote);
     }
@@ -210,14 +219,16 @@ public class VoteServiceImpl implements VoteService {
         CommentVote commentVote = commentVoteRepository.findById(commentVoteID)
                 .orElseThrow(() -> new GlobalException("Vote not found - commentId: " + commentId + ", user id: " + userId));
 
-        if (commentVote.getType() == commentVoteRequest.getVote()) {
-            throw new GlobalException("Vote already exists - commentId: " + commentId + ", user id: " + userId);
+        if (commentVoteRequest.getVote() == null || commentVoteRequest.getVote() == Vote.none) {
+            commentVoteRepository.delete(commentVote);
+            commentService.recalculateVotes(commentId);
+            return new CommentVoteResponse(new UserResponse(commentVote.getUser()), Vote.none);
         }
 
         commentVote.setType(commentVoteRequest.getVote());
         commentVoteRepository.save(commentVote);
 
-        commentService.updateCommentVoteCount(commentVote);
+        commentService.recalculateVotes(commentId);
         return toCommentResponse(commentVote);
     }
 
